@@ -12,7 +12,7 @@ const VideoPlayer: ForwardRefRenderFunction<
   const sourceUrl = source || "https://www.w3schools.com/html/mov_bbb.mp4"; // TODO: Remove this temp for testing
 
   return (
-    <Box w={"100%"} h={"100%"}>
+    <Box w={"100%"}>
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <video ref={ref} width={"100%"} height={"100%"} autoPlay>
         <source src={sourceUrl} type={"video/mp4"} />

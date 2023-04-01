@@ -57,7 +57,7 @@ const Video: NextPage = () => {
       <Box
         minH={"100vh"}
         px={10}
-        py={5}
+        pt={10}
         display={"flex"}
         flexDirection={"column"}
       >
@@ -73,7 +73,15 @@ const Video: NextPage = () => {
         <Flex h={"90vh"} justify={"space-between"}>
           <Flex w={"55vw"} direction={"column"} justify={"start"}>
             <VideoPlayer ref={videoRef} />
-            <Card h={"50%"} px={8} py={4} mt={8}>
+            <Card
+              flexGrow={1}
+              px={8}
+              py={4}
+              mt={8}
+              borderBottomLeftRadius={"0px"}
+              borderBottomRightRadius={"0px"}
+              borderBottom={"0px"}
+            >
               <Text fontSize={"xl"} fontWeight={"bold"}>
                 Notes
               </Text>
@@ -82,12 +90,20 @@ const Video: NextPage = () => {
               </Text>
             </Card>
           </Flex>
-          <Card w={"35vw"} px={8} py={4}>
+          <Card
+            w={"35vw"}
+            px={8}
+            py={4}
+            borderBottomLeftRadius={"0px"}
+            borderBottomRightRadius={"0px"}
+            borderBottom={"0px"}
+          >
             <Text fontSize={"xl"} fontWeight={"bold"}>
               Transcript
             </Text>
             <Text>
-              timestamp | this is where you would put the component for the transcript :3
+              timestamp | this is where you would put the component for the
+              transcript :3
             </Text>
           </Card>
         </Flex>
