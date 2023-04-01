@@ -1,33 +1,62 @@
 from pathlib import Path
 import subprocess
-from typing import List
+from typing import List, Union
 import os
 import threading
+from itertools import chain
+import logging
+from random import random
 
-from backend.models import Word, Sentence, Section, DownloadRequest
-from backend.utils import (
-    extract_wav_from_mp4,
-    parse_srt_to_words,
-    accumulate_words_to_sentences,
-    accumulate_sentences_to_sections,
-    convert_to_seconds,
-)
-
-from fastapi import FastAPI
-import firebase_admin
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import credentials, firestore, initialize_app
+
+from google.cloud.firestore import DocumentReference
 from pytube import YouTube
+import openai
+from chromadb import Client as chroma_client
+from chromadb.config import Settings
 
 from backend.stream import *
+from backend.models import Transcript, DownloadRequest
+from backend.utils import (
+    extract_wav_from_mp4,
+    transcript_from_srt,
+)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 # take environment variables from ../../.env.
-env_path = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
+ENV_PATH = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
 FILE_DIR = Path(__file__).parent.parent.parent.absolute().joinpath("videos")
-print("Loading environment variables from", env_path)
-load_dotenv(dotenv_path=env_path)
+WHISPER__MODEL = "tiny.en"
+
+print("Loading environment variables from", ENV_PATH)
+load_dotenv(dotenv_path=ENV_PATH)
+
+openai.api_key = os.environ["OPENAI_KEY"]
+
+db_client = chroma_client(
+    Settings(chroma_db_impl="duckdb+parquet", persist_directory=str(FILE_DIR))
+)
+
+collection = db_client.get_or_create_collection("transcripts")
+
+
+def get_embedding(input: str) -> List[float]:
+    embed_response = openai.Embedding.create(
+        input=input, model="text-embedding-ada-002"
+    )
+    return embed_response.data[0].embedding  # type: ignore
+
+
+def get_embeddings(input: List[str]) -> List[List[float]]:
+    embed_response = openai.Embedding.create(
+        input=input, model="text-embedding-ada-002"
+    )
+    return [x.embedding for x in embed_response.data]  # type: ignore
+
 
 # Initialize Firebase Admin
 cred = credentials.Certificate(
@@ -40,7 +69,7 @@ cred = credentials.Certificate(
     }
 )
 
-firebase_admin.initialize_app(cred)
+initialize_app(cred)
 db = firestore.client()
 app = FastAPI()
 
@@ -50,29 +79,81 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/process")
-async def process(vid: str, uid: str):
+def process(vid: str, uid: str, doc: DocumentReference):
+    logger.info(f"Processing video {vid} in collection {uid}")
+
+    logger.info("Extracting audio")
     file_name = (FILE_DIR / vid).with_suffix(".mp4")
+    vid = file_name.stem
     wav_name = file_name.with_suffix(".wav")
     extract_wav_from_mp4(file_name, wav_name)
-    cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter --model tiny.en --output_dir {FILE_DIR} --output_type srt-word"
-    subprocess.run(cmd, shell=True)
+    logger.info(f"Extracted audio to {wav_name}")
+    doc.update({"progress": random() * 0.2 + 0.2})
 
-    srt_file = file_name.with_suffix(".wav.word.srt")
-    with srt_file.open("r") as f:
-        srt_content = f.read()
-        words: List[Word] = parse_srt_to_words(srt_content)
-        sentences: List[Sentence] = accumulate_words_to_sentences(words)
-        sections: List[Section] = accumulate_sentences_to_sections(sentences)
+    logger.info("Extracting transcript using whisperx")
+    cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter True --model {WHISPER__MODEL} --output_dir {FILE_DIR} --output_format srt-word"
+    result = subprocess.run(cmd, shell=True)
+    if result.returncode != 0:
+        raise HTTPException(status_code=500, detail="WhisperX failed")
+    logger.info(f"Whispered transcript to {(FILE_DIR / vid).with_suffix('.word.srt')}")
+    doc.update({"progress": random() * 0.1 + 0.7})
 
-        for x in sentences:
-            print(x.content)
-        print(sections)
+    logger.info("Creating transcript object")
+    srt_file = file_name.with_suffix(".word.srt")
+    transcript: Transcript = transcript_from_srt(srt_file)
+    logger.info("Created transcript object")
+    doc.update({"progress": random() * 0.1 + 0.8})
 
-        print(
-            f"{len(words)} words, {len(sentences)} sentences, {len(sections)} sections"
-        )
+    logger.info("Upserting transcript to firestore")
+    doc.update({"transcript": transcript.dict()})
+    logger.info("Upserted transcript to firestore")
+    doc.update({"progress": 1})
+
+    logger.info("Generating vectors")
+    sections = transcript.sections
+    sentences = list(chain.from_iterable([section.sentences for section in sections]))
+
+    sentence_embeddings = get_embeddings([sentence.content for sentence in sentences])
+    sentence_documents = [x.content for x in sentences]
+    sentence_metadatas: list[dict[str, str]] = [
+        {"uid": uid, "vid": vid, "type": "sentence"} for _ in sentences
+    ]
+    sentence_ids = [f"{vid}_sentence_{i}" for i in range(len(sentences))]
+    logger.info("Generated vectors")
+
+    section_embeddings = get_embeddings([section.content for section in sections])
+    section_documents = [x.content for x in sections]
+    section_metadatas: list[dict[str, str]] = [
+        {"uid": uid, "vid": vid, "type": "section"} for _ in sections
+    ]
+    section_ids = [f"{vid}_section_{i}" for i in range(len(sections))]
+
+    logger.info("Upserting vectors")
+    collection.add(
+        embeddings=sentence_embeddings,
+        documents=sentence_documents,
+        metadatas=sentence_metadatas,  # type: ignore
+        ids=sentence_ids,
+    )
+
+    collection.add(
+        embeddings=section_embeddings,
+        documents=section_documents,
+        metadatas=section_metadatas,  # type: ignore
+        ids=section_ids,
+    )
+    logger.info("Upserted vectors")
+
     return "lgtm"
+
+
+@app.get("/search")
+async def search(query: str, uid: str, vid: Union[str, None] = None):
+    query_embedding = get_embedding(query)
+    result = collection.query(
+        query_embeddings=query_embedding, n_results=5, where={"uid": uid}
+    )
+    print(result)
 
 
 @app.post("/download")
@@ -83,6 +164,7 @@ async def download_video(request: DownloadRequest):
         stream = yt.streams.filter(
             file_extension="mp4",
         ).get_highest_resolution()
+        assert stream is not None
 
         time, doc = db.collection("videos").add(
             {
@@ -114,6 +196,7 @@ async def download_video(request: DownloadRequest):
             # Do something with the downloaded video
             print("Download completed", file_path)
             doc.update({"progressMessage": "Processing", "progress": 0})
+            process(file_path, request.uid, doc)
 
         yt.register_on_complete_callback(on_complete)
         yt.register_on_progress_callback(on_progress)
