@@ -143,13 +143,14 @@ const VideoControls = ({
     <Box
       w={"unset"}
       bg={"#FFFFFF"}
-      border={"4px solid #000000"}
+      border={"3px solid #000000"}
       boxShadow={"-8px 10px 0px #000000"}
-      borderRadius={"16px"}
-      padding={"10px 25px 10px 25px"}
+      borderRadius={"10px"}
+      px={8}
+      py={2}
     >
       <Box display={"flex"} justifyContent={"space-between"}>
-        <Text fontSize={"4xl"} fontWeight={"bold"}>
+        <Text fontSize={"xl"} fontWeight={"bold"}>
           {videoTitle || "Video"}
         </Text>
         <Box position={"relative"}>
@@ -157,9 +158,9 @@ const VideoControls = ({
             <Box
               key={user.id}
               position={"absolute"}
-              right={`${(index + 1) * 25}px`}
-              width={"50px"} // TODO: Scale this with the font size of the header probably
-              height={"50px"}
+              right={`${(index + 1) * 25 - 6}px`}
+              width={"30px"} // TODO: Scale this with the font size of the header probably
+              height={"30px"}
               borderRadius={"50%"}
               border={`2px solid ${user.color}`}
               overflow={"hidden"}
