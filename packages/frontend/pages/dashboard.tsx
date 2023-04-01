@@ -132,7 +132,7 @@ const Dashboard: NextPage = () => {
             </Card>
           </WrapItem>
         </Wrap>
-        <pre>{JSON.stringify(videos)}</pre>
+        <pre>{JSON.stringify(videos, null, 2)}</pre>
       </Box>
       <AddVideoModal open={isOpen} onClose={onClose} uid={uid} />
     </PageLayout>
