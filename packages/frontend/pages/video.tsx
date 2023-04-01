@@ -1,15 +1,5 @@
 import type { NextPage } from "next";
-import {
-  Box,
-  Heading,
-  HStack,
-  Spinner,
-  Text,
-  Image,
-  Wrap,
-  WrapItem,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Flex, HStack, Spinner, Text } from "@chakra-ui/react";
 import React, { useRef } from "react";
 import { useAuth } from "reactfire";
 import PageLayout from "../components/Layout/PageLayout";
@@ -67,44 +57,56 @@ const Video: NextPage = () => {
       <Box
         minH={"100vh"}
         px={10}
-        paddingTop={5}
+        pt={10}
         display={"flex"}
         flexDirection={"column"}
       >
-        <HStack alignItems={"stretch"}>
+        <Flex mb={10}>
           <Box flexGrow={1}>
             <VideoControls videoRef={videoRef} />
           </Box>
-          <Button h={"100%"} onClick={share} px={[20, 20]}>
-            <Text fontSize={"4xl"}>Share</Text>
+          <Button px={12} ml={10} onClick={share}>
+            <Text fontSize={"2xl"}>Share</Text>
           </Button>
-        </HStack>
-        <Box
-          display={"flex"}
-          flexDirection={"row"}
-          py={[0, 15]}
-          bgColor={"red"}
-          height={"100%"}
-        >
-          <Box w={"65%"} height={"100vh"}>
+        </Flex>
+
+        <Flex h={"90vh"} justify={"space-between"}>
+          <Flex w={"55vw"} direction={"column"} justify={"start"}>
             <VideoPlayer ref={videoRef} />
-          </Box>
-          <Box display={"flex"} flexDirection={"column"} h={"100%"}>
-            <Box>1</Box>
-            <Box
-              boxSizing={"border-box"}
-              height={"100%"}
-              right={"15px"}
-              bottom={"-10px"}
-              bg={"#FFFFFF"}
-              border={"4px solid #000000"}
-              boxShadow={"-8px 10px 0px #000000"}
-              borderRadius={"10px"}
+            <Card
+              flexGrow={1}
+              px={8}
+              py={4}
+              mt={8}
+              borderBottomLeftRadius={"0px"}
+              borderBottomRightRadius={"0px"}
+              borderBottom={"0px"}
             >
-              2
-            </Box>
-          </Box>
-        </Box>
+              <Text fontSize={"xl"} fontWeight={"bold"}>
+                Notes
+              </Text>
+              <Text>
+                insert cool component here that shows the annotation notes idk
+              </Text>
+            </Card>
+          </Flex>
+          <Card
+            w={"35vw"}
+            px={8}
+            py={4}
+            borderBottomLeftRadius={"0px"}
+            borderBottomRightRadius={"0px"}
+            borderBottom={"0px"}
+          >
+            <Text fontSize={"xl"} fontWeight={"bold"}>
+              Transcript
+            </Text>
+            <Text>
+              timestamp | this is where you would put the component for the
+              transcript :3
+            </Text>
+          </Card>
+        </Flex>
       </Box>
     </PageLayout>
   );
