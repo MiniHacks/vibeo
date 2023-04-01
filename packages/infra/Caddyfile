@@ -1,11 +1,8 @@
-:8888
+vibeo.video
+reverse_proxy 172.0.0.1:3000
 
-handle_path {$IO_PATH}* {
-    reverse_proxy 127.0.0.1:{$IO_PORT}
-}
+io.vibeo.video
+reverse_proxy 160.94.179.150:40350
 
-handle_path {$BACKEND_PATH}* {
-    reverse_proxy 127.0.0.1:{$BACKEND_PORT}
-}
-
-reverse_proxy 127.0.0.1:{$PORT}
+backend.vibeo.video
+reverse_proxy 160.94.179.150:40349
