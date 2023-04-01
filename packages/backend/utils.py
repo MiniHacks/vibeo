@@ -3,7 +3,8 @@ import re
 from pathlib import Path
 import subprocess
 
-from models import Word, Sentence, Section
+from backend.models import Word, Sentence, Section, Transcript
+from sqlalchemy import Transaction
 
 
 def extract_wav_from_mp4(input_mp4: Path, output_wav: Path):
@@ -33,21 +34,19 @@ def accumulate_words_to_sentences(
     for word in words:
         sentence_words.append(word)
         if word.content[-1] in end_chars:
-            sentence_content = " ".join(w.content for w in sentence_words)
             sentence = Sentence(
                 start=sentence_words[0].start,
                 end=sentence_words[-1].end,
-                content=sentence_content,
+                words=sentence_words,
             )
             sentences.append(sentence)
             sentence_words = []
 
     if sentence_words:
-        sentence_content = " ".join(w.content for w in sentence_words)
         sentence = Sentence(
             start=sentence_words[0].start,
             end=sentence_words[-1].end,
-            content=sentence_content,
+            words=sentence_words,
         )
         sentences.append(sentence)
 
@@ -65,26 +64,39 @@ def accumulate_sentences_to_sections(
         gap = sentences[i + 1].start - sentence.end
 
         if gap > gap_threshold:
-            section_content = " ".join(s.content for s in section_sentences)
             section = Section(
                 start=section_sentences[0].start,
                 end=section_sentences[-1].end,
-                content=section_content,
+                sentences=section_sentences,
             )
             sections.append(section)
             section_sentences = []
 
     if section_sentences:
         section_sentences.append(sentences[-1])
-        section_content = " ".join(s.content for s in section_sentences)
         section = Section(
             start=section_sentences[0].start,
             end=section_sentences[-1].end,
-            content=section_content,
+            sentences=section_sentences,
         )
         sections.append(section)
 
     return sections
+
+
+def transcript_from_sections(sections: List[Section]) -> Transcript:
+    transcript = Transcript(sections=sections)
+    return transcript
+
+
+def transcript_from_srt(file_name: Path) -> Transcript:
+    with open(file_name, "r") as f:
+        srt_content = f.read()
+    words = parse_srt_to_words(srt_content)
+    sentences = accumulate_words_to_sentences(words)
+    sections = accumulate_sentences_to_sections(sentences)
+    transcript = transcript_from_sections(sections)
+    return transcript
 
 
 def convert_to_seconds(timestamp: str) -> float:

@@ -17,7 +17,7 @@ class Sentence(BaseModel):
 class Section(BaseModel):
     start: float
     end: float
-    sentences = List[Sentence]
+    sentences: List[Sentence]
 
 
 class Transcript(BaseModel):
