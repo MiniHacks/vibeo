@@ -33,6 +33,12 @@ const AddVideoModal = ({
     onClose();
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      uploadYoutube();
+    }
+  };
+
   return (
     <Modal isOpen={open} onClose={onClose}>
       <ModalOverlay />
@@ -48,6 +54,7 @@ const AddVideoModal = ({
             border={"2px solid black !important"}
             value={youtubeLink}
             onChange={handleYoutubeLinkChange}
+            onKeyDown={handleKeyDown}
           />
         </VStack>
       </ModalContent>
