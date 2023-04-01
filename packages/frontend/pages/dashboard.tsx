@@ -17,6 +17,7 @@ import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import SearchBar from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
 
@@ -73,9 +74,18 @@ const Dashboard: NextPage = () => {
             Logout
           </Button>
         </HStack>
-        <Button my={6} colorScheme={"green"} onClick={onOpen}>
-          Add Video
-        </Button>
+        <HStack>
+          <Button my={6} colorScheme={"green"} onClick={onOpen}>
+            Add Video
+          </Button>
+          <SearchBar
+            ml={2}
+            py={5}
+            placeholder={
+              "Where are Sasha and Samyok being insufferable people?"
+            }
+          />
+        </HStack>
         <Wrap overflow={"unset"} spacing={6}>
           <WrapItem>
             <Card p={2} w={328}>
