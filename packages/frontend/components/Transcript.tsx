@@ -142,13 +142,25 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
     return `${minutes.toString()}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const handleSentenceClick = (startTime: number) => {
+    if (videoRef?.current) {
+      videoRef.current.currentTime = startTime;
+    }
+  };
+
   return (
     <Box w={"100%"}>
       <Box mt={4}>
         {videoData.transcript?.map((section: TranscriptSection) =>
           section.sentences.map((sentence: TranscriptSentence) => {
             return (
-              <Box display={"flex"} alignItems={"baseline"} mt={"2px"}>
+              <Box
+                display={"flex"}
+                alignItems={"baseline"}
+                mt={"2px"}
+                onClick={() => handleSentenceClick(sentence.start)}
+                _hover={{ cursor: "pointer" }}
+              >
                 <Box
                   bg={"gray.200"}
                   py={1}
