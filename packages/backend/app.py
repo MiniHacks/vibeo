@@ -11,7 +11,6 @@ from firebase_admin import credentials, firestore, initialize_app
 from pytube import YouTube
 import openai
 from chromadb import Client as chroma_client
-from chromadb.utils import embedding_functions
 from chromadb.config import Settings
 
 from backend.stream import *
@@ -35,11 +34,18 @@ db_client = chroma_client(Settings(persist_directory=str(FILE_DIR)))
 collection = db_client.create_collection("transcripts")
 
 
+def get_embedding(input: str) -> List[float]:
+    embed_response = openai.Embedding.create(
+        input=input, model="text-embedding-ada-002"
+    )
+    return embed_response.data.embedding  # type: ignore
+
+
 def get_embeddings(input: List[str]) -> List[List[float]]:
     embed_response = openai.Embedding.create(
         input=input, model="text-embedding-ada-002"
     )
-    return [x["embedding"] for x in embed_response.data]  # type: ignore
+    return [x.embedding for x in embed_response.data]  # type: ignore
 
 
 # Initialize Firebase Admin
@@ -106,6 +112,14 @@ async def process(vid: str, uid: str):
     )
 
     return "lgtm"
+
+
+@app.get("/search")
+async def search(query: str, uid: str, vid: str | None = None):
+    query_embedding = get_embedding(query)
+    collection.query(
+        query_embeddings=query_embedding, n_results=5, where={"source": "my_source"}
+    )
 
 
 @app.post("/download")
