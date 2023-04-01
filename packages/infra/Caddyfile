@@ -4,9 +4,11 @@ vibeo.video {
 
 io.vibeo.video {
     reverse_proxy 160.94.179.150:40350
+    cors
 }
 
 backend.vibeo.video {
     reverse_proxy 160.94.179.150:40349
+    cors
 }
 

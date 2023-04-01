@@ -28,8 +28,18 @@ const AddVideoModal = ({
   };
 
   const uploadYoutube = () => {
-    const url = `https://backend.vibeo.video/download?uid=${uid}&url=${youtubeLink}`;
-    fetch(url);
+    const url = `https://backend.vibeo.video/download`;
+    const data = {
+      uid,
+      url: youtubeLink,
+    };
+    fetch(url, {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     onClose();
   };
 
