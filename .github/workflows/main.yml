@@ -15,6 +15,8 @@ jobs:
           username: samyok
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh  
             cd ~/vibeo/packages/frontend
             git pull
             yarn build
