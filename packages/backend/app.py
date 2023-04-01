@@ -12,6 +12,7 @@ from pytube import YouTube
 import openai
 from chromadb import Client as chroma_client
 from chromadb.utils import embedding_functions
+from chromadb.config import Settings
 
 from backend.stream import *
 from backend.models import Word, Sentence, Section, Transcript, DownloadRequest
@@ -21,13 +22,6 @@ from backend.utils import (
 )
 
 
-db_client = chroma_client()
-
-openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    api_key="YOUR_API_KEY", model_name="text-embedding-ada-002"
-)
-collection = db_client.create_collection("transcripts", embedding_function=openai_ef)
-
 # take environment variables from ../../.env.
 env_path = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
 FILE_DIR = Path(__file__).parent.parent.parent.absolute().joinpath("videos")
@@ -35,6 +29,10 @@ print("Loading environment variables from", env_path)
 load_dotenv(dotenv_path=env_path)
 
 openai.api_key = os.environ["OPENAI_KEY"]
+
+db_client = chroma_client(Settings(persist_directory=str(FILE_DIR)))
+
+collection = db_client.create_collection("transcripts")
 
 
 def get_embeddings(input: List[str]) -> List[List[float]]:
@@ -75,20 +73,36 @@ async def process(vid: str, uid: str):
 
     srt_file = file_name.with_suffix(".wav.word.srt")
     transcript: Transcript = transcript_from_srt(srt_file)
+
     sections = transcript.sections
     sentences = list(chain.from_iterable([section.sentences for section in sections]))
 
-    section_embeddings = get_embeddings([section.content for section in sections])
     sentence_embeddings = get_embeddings([sentence.content for sentence in sentences])
-    sentence_metadatas = [
-        {"uid": uid, "vid": vid, "type": "sentence"} for _ in range(len(sections))
+    sentence_documents = [x.content for x in sentences]
+    sentence_metadatas: list[dict[str, str]] = [
+        {"uid": uid, "vid": vid, "type": "sentence"} for _ in sentences
     ]
+    sentence_ids = [f"{vid}_sentence_{i}" for i in range(len(sentences))]
+
+    collection.add(
+        embeddings=sentence_embeddings,
+        documents=sentence_documents,
+        metadatas=sentence_metadatas,  # type: ignore
+        ids=sentence_ids,
+    )
+
+    section_embeddings = get_embeddings([section.content for section in sections])
+    section_documents = [x.content for x in sections]
+    section_metadatas: list[dict[str, str]] = [
+        {"uid": uid, "vid": vid, "type": "section"} for _ in sections
+    ]
+    section_ids = [f"{vid}_section_{i}" for i in range(len(sections))]
 
     collection.add(
         embeddings=section_embeddings,
-        documents=sentences,
-        metadatas=sentence_metadatas,
-        ids=["doc1", "doc2"],
+        documents=section_documents,
+        metadatas=section_metadatas,  # type: ignore
+        ids=section_ids,
     )
 
     return "lgtm"
