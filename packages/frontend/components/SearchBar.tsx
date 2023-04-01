@@ -7,11 +7,14 @@ import {
 } from "@chakra-ui/react";
 import { ChangeEvent } from "react";
 
-export type SearchbarProps = {
+export type SearchBarProps = {
   onSearch: (query: string) => void;
 } & BoxProps;
 
-export default function SearchBar({onSearch, ...props}: SearchbarProps): JSX.Element {
+export default function SearchBar({
+  onSearch,
+  ...props
+}: SearchBarProps): JSX.Element {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     return onSearch(event.target.value);
   };
@@ -34,7 +37,11 @@ export default function SearchBar({onSearch, ...props}: SearchbarProps): JSX.Ele
         bg={"transparent"}
         border={"none"}
       >
+<<<<<<< HEAD
         <Image src={"search.svg"} />
+=======
+        <Image alt={"magnifying glass search icon"} src={"search.svg"} />
+>>>>>>> daa33538599e813d8f23775c2756e42ffbe97130
       </InputRightElement>
     </InputGroup>
   );
