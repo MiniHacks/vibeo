@@ -3,7 +3,7 @@ import { Box, Heading } from "@chakra-ui/react";
 import { useRef } from "react";
 import PageLayout from "../components/Layout/PageLayout";
 import Footer from "../components/Layout/Footer";
-import VideoPlayer, { VideoPlayerProps } from "../components/VideoPlayer";
+import VideoPlayer from "../components/VideoPlayer";
 import VideoControls from "../components/VideoControls";
 
 const Home: NextPage = () => {
