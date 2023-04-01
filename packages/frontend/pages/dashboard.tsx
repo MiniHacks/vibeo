@@ -11,8 +11,9 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import React from "react";
-import { useAuth } from "reactfire";
+import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
+import { collection, orderBy, query, where } from "firebase/firestore";
 import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
@@ -32,6 +33,19 @@ const Dashboard: NextPage = () => {
   const signOut = () => {
     auth.signOut().then(() => router.push("/"));
   };
+
+  // set up query
+  const firestore = useFirestore();
+  const videosCollection = collection(firestore, "videos");
+  const uid: string = authUser?.uid ?? "samyok";
+  const videosQuery = query(
+    videosCollection,
+    where("uid", "==", uid),
+    orderBy("createdAt", "desc")
+  );
+  const { status, data: videos } = useFirestoreCollectionData(videosQuery, {
+    idField: "id", // this field will be added to the object created from each document
+  });
 
   if (loading) {
     return (
@@ -61,6 +75,7 @@ const Dashboard: NextPage = () => {
       </PageLayout>
     );
   }
+
   return (
     <PageLayout title={"dashboard | vibeo - your personal video repository"}>
       <Box px={[5, 10]} py={10}>
@@ -94,6 +109,7 @@ const Dashboard: NextPage = () => {
             </Card>
           </WrapItem>
         </Wrap>
+        <pre>{JSON.stringify(videos)}</pre>
       </Box>
       <AddVideoModal open={isOpen} onClose={onClose} />
     </PageLayout>
