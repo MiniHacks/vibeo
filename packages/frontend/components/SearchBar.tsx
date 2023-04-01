@@ -5,10 +5,15 @@ import {
   Image,
   BoxProps,
 } from "@chakra-ui/react";
+import { ChangeEvent } from "react";
 
-export default function SearchBar(props: BoxProps): JSX.Element {
-  const handleSearch = (event) => {
-    console.log("lol");
+export type SearchbarProps = {
+  onSearch: (query: string) => void;
+} & BoxProps;
+
+export default function SearchBar({onSearch, ...props}: SearchbarProps): JSX.Element {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    return onSearch(event.target.value);
   };
 
   return (
@@ -19,7 +24,7 @@ export default function SearchBar(props: BoxProps): JSX.Element {
         border={"3px solid black !important"}
         boxShadow={"-5px 7px 0px black !important"}
         borderRadius={"lg"}
-        onChange={handleSearch}
+        onChange={handleChange}
         {...props}
       />
       <InputRightElement
@@ -29,7 +34,7 @@ export default function SearchBar(props: BoxProps): JSX.Element {
         bg={"transparent"}
         border={"none"}
       >
-        <Image onClick={handleSearch} src={"search.svg"} />
+        <Image src={"search.svg"} />
       </InputRightElement>
     </InputGroup>
   );

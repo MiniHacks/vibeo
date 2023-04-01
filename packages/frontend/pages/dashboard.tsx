@@ -62,6 +62,16 @@ const Dashboard: NextPage = () => {
       </PageLayout>
     );
   }
+
+  const filterSearch = (query: string): void => {
+    console.log("Searching for: ", query);
+    if (query.includes('?')) {
+      console.log("This is a context search query.")
+    } else {
+      console.log("This is a filter search query.")
+    }
+  };
+
   return (
     <PageLayout title={"dashboard | vibeo - your personal video repository"}>
       <Box px={[5, 10]} py={10}>
@@ -79,6 +89,7 @@ const Dashboard: NextPage = () => {
             Add Video
           </Button>
           <SearchBar
+            onSearch={filterSearch}
             ml={2}
             py={5}
             placeholder={
