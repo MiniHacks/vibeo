@@ -1,4 +1,4 @@
-import { Box, Text } from "@chakra-ui/react";
+import { Box, Text, Image } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
@@ -16,9 +16,24 @@ export type VideoControlsProps = {
 };
 
 const defaultUsers: VideoControlsUser[] = [
-  { color: "red", iconUrl: "https://example.com/user1.png", progress: 0.2 },
-  { color: "blue", iconUrl: "https://example.com/user2.png", progress: 0.5 },
-  { color: "green", iconUrl: "https://example.com/user3.png", progress: 0.8 },
+  {
+    color: "red",
+    iconUrl:
+      "https://www.seattleaquarium.org/sites/default/files/images/animal/harborseal/Casey.jpg",
+    progress: 0.2,
+  },
+  {
+    color: "blue",
+    iconUrl:
+      "https://media.wired.co.uk/photos/60c8730fa81eb7f50b44037e/16:9/w_2560%2Cc_limit/1521-WIRED-Cat.jpeg",
+    progress: 0.5,
+  },
+  {
+    color: "green",
+    iconUrl:
+      "https://www.thesafaricollection.com/wp-content/uploads/2022/07/The-Safari-Collection-Hey-You-Giraffe-Manor-1.jpg",
+    progress: 0.8,
+  },
 ];
 
 const VideoControls = ({
@@ -37,13 +52,19 @@ const VideoControls = ({
       }
     };
 
+    const handleVideoEnd = () => {
+      setPaused(true);
+    };
+
     if (videoRef?.current) {
       videoRef.current.addEventListener("timeupdate", updateProgress);
+      videoRef.current.addEventListener("ended", handleVideoEnd);
     }
 
     return () => {
       if (videoRef?.current) {
         videoRef.current.removeEventListener("timeupdate", updateProgress);
+        videoRef.current.removeEventListener("ended", handleVideoEnd);
       }
     };
   }, [videoRef]);
@@ -125,9 +146,24 @@ const VideoControls = ({
       borderRadius={"16px"}
       padding={"10px 25px 10px 25px"}
     >
-      <Text fontSize={"4xl"} fontWeight={"bold"}>
-        {videoTitle || "Video"}
-      </Text>
+      <Box display={"flex"} justifyContent={"space-between"}>
+        <Text fontSize={"4xl"} fontWeight={"bold"}>
+          {videoTitle || "Video"}
+        </Text>
+        {users.map((user, index) => (
+          <Box
+            position="absolute"
+            right={`${(index + 1) * 25}px`}
+            width="50px" // TODO: Scale this with the font size of the header probably
+            height="50px"
+            borderRadius="50%"
+            border={`2px solid ${user.color}`}
+            overflow="hidden"
+          >
+            <Image src={user.iconUrl} alt={`User ${index + 1}`} w={"100%"} h={"100%"} />
+          </Box>
+        ))}
+      </Box>
       <Box display={"flex"} flexDirection={"row"}>
         <Box
           position={"relative"}
