@@ -29,7 +29,11 @@ const Footer = (): JSX.Element => {
           color={"white"}
         >
           by{" "}
-          <Text as={"span"} color={"brand"}>
+          <Text
+            as={"a"}
+            color={"brand"}
+            href={"https://www.linkedin.com/in/samyok"}
+          >
             samyok
           </Text>
           ,{" "}
