@@ -13,4 +13,9 @@ export default extendTheme({
   colors: {
     brand: "#FFC700",
   },
+  // font family:
+  fonts: {
+    heading: "Patrick Hand",
+    body: "Poppins",
+  },
 });

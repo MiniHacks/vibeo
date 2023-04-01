@@ -5,6 +5,7 @@ import Footer from "../components/Layout/Footer";
 import Card from "../components/Card";
 
 const Home: NextPage = () => {
+
   return (
     <PageLayout title={"geese, by minihacks"}>
       <Box flexDirection={"column"} minH={"100vh"} display={"flex"}> 
