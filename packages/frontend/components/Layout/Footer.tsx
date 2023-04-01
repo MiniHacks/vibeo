@@ -8,7 +8,9 @@ const Footer = (): JSX.Element => {
         <HStack justifyContent={"space-between"}>
           <VStack alignItems={"left"}>
             <Text lineHeight={'100%'} m={0} p={0} fontSize='3xl' fontFamily="Patrick Hand" color="white">vibeo</Text>
-            <Text letterSpacing={'0.05em'} lineHeight={'100%'} m={0} p={0} fontFamily="Poppins" fontWeight="semibold" color="white">by samyok, mini, sasha, and jack</Text>
+            <Text letterSpacing={'0.05em'} lineHeight={'100%'} m={0} p={0} fontFamily="Poppins" fontWeight="semibold" color="white">
+              by <Text as="span" color={'brand.100'}>samyok</Text>, <Text as="span" color="brand.100">mini</Text>, <Text as="span" color="brand.100">sasha</Text>, and <Text as="span" color="brand.100">jack</Text>
+            </Text>
             <Flex align="center" direction="column" justify="center" fontSize='xs' letterSpacing={'0.18em'} fontFamily={"Poppins"} color="white">
               <Text>
                 <Link href='https://github.com/MiniHacks/vibeo'>github</Link>{' | '} 
