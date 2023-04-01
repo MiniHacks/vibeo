@@ -1,7 +1,10 @@
-fastapi==0.74.0
-uvicorn[standard]==0.17.5
+fastapi==0.95.0
+uvicorn[standard]==0.21.1
 git+https://github.com/m-bain/whisperx.git
+git+https://github.com/hmmlearn/hmmlearn.git
 soundfile
 firebase_admin
 pytube
 python-dotenv
+chromadb
+openai[embeddings]

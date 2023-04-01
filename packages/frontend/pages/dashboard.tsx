@@ -11,8 +11,9 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import React from "react";
-import { useAuth } from "reactfire";
+import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
+import { collection, orderBy, query, where } from "firebase/firestore";
 import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
@@ -20,7 +21,6 @@ import Button from "../components/Button";
 import SearchBar from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
-import Tooltip from "../components/Tooltip";
 
 const Dashboard: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -34,6 +34,19 @@ const Dashboard: NextPage = () => {
   const signOut = () => {
     auth.signOut().then(() => router.push("/"));
   };
+
+  // set up query
+  const firestore = useFirestore();
+  const videosCollection = collection(firestore, "videos");
+  const uid: string = authUser?.uid ?? "samyok";
+  const videosQuery = query(
+    videosCollection,
+    where("uid", "==", uid),
+    orderBy("createdAt", "desc")
+  );
+  const { status, data: videos } = useFirestoreCollectionData(videosQuery, {
+    idField: "id", // this field will be added to the object created from each document
+  });
 
   if (loading) {
     return (
@@ -64,9 +77,9 @@ const Dashboard: NextPage = () => {
     );
   }
 
-  const filterSearch = (query: string): void => {
-    console.log("Searching for: ", query);
-    if (query.includes("?")) {
+  const filterSearch = (qry: string): void => {
+    console.log("Searching for: ", qry);
+    if (qry.includes("?")) {
       console.log("This is a context search query.");
     } else {
       console.log("This is a filter search query.");
@@ -75,8 +88,7 @@ const Dashboard: NextPage = () => {
 
   // shows tooltip upon question search query
 
-  // shows relevant cards given a filter
-  const showCards = () => {};
+  // const showCards = () => {};
 
   return (
     <PageLayout title={"dashboard | vibeo - your personal video repository"}>
@@ -121,6 +133,7 @@ const Dashboard: NextPage = () => {
             </Card>
           </WrapItem>
         </Wrap>
+        <pre>{JSON.stringify(videos)}</pre>
       </Box>
       <AddVideoModal open={isOpen} onClose={onClose} />
     </PageLayout>

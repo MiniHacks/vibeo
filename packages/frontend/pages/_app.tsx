@@ -8,8 +8,13 @@ import {
   initializeAuth,
   inMemoryPersistence,
 } from "firebase/auth";
-import { FirebaseAppProvider, AuthProvider } from "reactfire";
+import {
+  AuthProvider,
+  FirebaseAppProvider,
+  FirestoreProvider,
+} from "reactfire";
 
+import { getFirestore } from "@firebase/firestore";
 import theme from "../theme";
 import configuration from "../configuration";
 import { isBrowser } from "../lib/generic/isBrowser";
@@ -52,9 +57,11 @@ function MyApp(props: AppProps): JSX.Element {
   return (
     <FirebaseAppProvider firebaseApp={app}>
       <AuthProvider sdk={auth}>
-        <ChakraProvider theme={theme}>
-          <Component {...pageProps} />
-        </ChakraProvider>
+        <FirestoreProvider sdk={getFirestore(app)}>
+          <ChakraProvider theme={theme}>
+            <Component {...pageProps} />
+          </ChakraProvider>
+        </FirestoreProvider>
       </AuthProvider>
     </FirebaseAppProvider>
   );

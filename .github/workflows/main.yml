@@ -1,0 +1,23 @@
+name: Deploy to Server
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
+        with:
+          host: vibeo.video
+          username: samyok
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh  
+            cd ~/vibeo/packages/frontend
+            git pull
+            yarn build
+            pm2 restart vibeo --update-env

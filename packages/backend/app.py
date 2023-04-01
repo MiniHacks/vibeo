@@ -1,47 +1,31 @@
-from pathlib import Path
-import subprocess
-from typing import List
+from typing import Union
+import logging
 import os
 import threading
 
-from backend.models import Word, Sentence, Section, DownloadRequest
-from backend.utils import (
-    extract_wav_from_mp4,
-    parse_srt_to_words,
-    accumulate_words_to_sentences,
-    accumulate_sentences_to_sections,
-    convert_to_seconds,
-)
-
-from fastapi import FastAPI
-import firebase_admin
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
-from firebase_admin import credentials
 from firebase_admin import firestore
 from pytube import YouTube
+import openai
 
+
+from backend.models import DownloadRequest
 from backend.stream import *
+from backend.utils import get_embedding, get_embeddings, process
+from backend.constants import ENV_PATH, FILE_DIR
+from backend.connections import db, collection
 
-# take environment variables from ../../.env.
-env_path = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
-FILE_DIR = Path(__file__).parent.parent.parent.absolute().joinpath("videos")
-print("Loading environment variables from", env_path)
-load_dotenv(dotenv_path=env_path)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
-# Initialize Firebase Admin
-cred = credentials.Certificate(
-    {
-        "type": "service_account",
-        "project_id": os.environ["FIREBASE_PROJECT_ID"],
-        "private_key": os.environ["FIREBASE_AUTH_SECRET"].replace("\\n", "\n"),
-        "client_email": os.environ["FIREBASE_CLIENT_EMAIL"],
-        "token_uri": "https://oauth2.googleapis.com/token",
-    }
-)
 
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+logger.info(f"Loading environment variables from {ENV_PATH}")
+load_dotenv(dotenv_path=ENV_PATH)
+
+openai.api_key = os.environ["OPENAI_KEY"]
+
+
 app = FastAPI()
 
 
@@ -50,29 +34,13 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/process")
-async def process(vid: str, uid: str):
-    file_name = (FILE_DIR / vid).with_suffix(".mp4")
-    wav_name = file_name.with_suffix(".wav")
-    extract_wav_from_mp4(file_name, wav_name)
-    cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter --model tiny.en --output_dir {FILE_DIR} --output_type srt-word"
-    subprocess.run(cmd, shell=True)
-
-    srt_file = file_name.with_suffix(".wav.word.srt")
-    with srt_file.open("r") as f:
-        srt_content = f.read()
-        words: List[Word] = parse_srt_to_words(srt_content)
-        sentences: List[Sentence] = accumulate_words_to_sentences(words)
-        sections: List[Section] = accumulate_sentences_to_sections(sentences)
-
-        for x in sentences:
-            print(x.content)
-        print(sections)
-
-        print(
-            f"{len(words)} words, {len(sentences)} sentences, {len(sections)} sections"
-        )
-    return "lgtm"
+@app.get("/search")
+async def search(query: str, uid: str, vid: Union[str, None] = None):
+    query_embedding = get_embedding(query)
+    result = collection.query(
+        query_embeddings=query_embedding, n_results=5, where={"uid": uid}
+    )
+    print(result)
 
 
 @app.post("/download")
@@ -83,6 +51,7 @@ async def download_video(request: DownloadRequest):
         stream = yt.streams.filter(
             file_extension="mp4",
         ).get_highest_resolution()
+        assert stream is not None
 
         time, doc = db.collection("videos").add(
             {
@@ -93,7 +62,7 @@ async def download_video(request: DownloadRequest):
                 "progressMessage": "Downloading",
                 "progress": 0,
                 "uid": request.uid,
-                "created": firestore.SERVER_TIMESTAMP,
+                "created": firestore.SERVER_TIMESTAMP,  # type: ignore
             }
         )
 
@@ -114,6 +83,7 @@ async def download_video(request: DownloadRequest):
             # Do something with the downloaded video
             print("Download completed", file_path)
             doc.update({"progressMessage": "Processing", "progress": 0})
+            process(file_path, request.uid, doc)
 
         yt.register_on_complete_callback(on_complete)
         yt.register_on_progress_callback(on_progress)
