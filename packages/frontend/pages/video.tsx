@@ -1,15 +1,16 @@
 import type { NextPage } from "next";
 import { Box, Flex, HStack, Spinner, Text } from "@chakra-ui/react";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useAuth } from "reactfire";
 import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
 import Button from "../components/Button";
-import VideoControls from "../components/VideoControls";
+import VideoControls from "../components/videopage/VideoControls";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
-import VideoPlayer from "../components/VideoPlayer";
 import Transcript from "../components/Transcript";
+import VideoPlayer from "../components/videopage/VideoPlayer";
+import CanvasToolbar from "../components/videopage/CanvasToolbar";
 
 const Video: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -18,8 +19,15 @@ const Video: NextPage = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const auth = useAuth();
 
-  const signOut = () => {
-    auth.signOut();
+  const [color, setColor] = useState<string>("red");
+  const voidFunc = () => {};
+  const [undo, setUndo] = useState<() => void>(voidFunc);
+
+  const share = () => {};
+
+  const onSetColor = (c: string) => {
+    console.log(c);
+    setColor(c);
   };
 
   if (loading) {
@@ -51,8 +59,6 @@ const Video: NextPage = () => {
     );
   }
 
-  const share = () => {};
-
   return (
     <PageLayout title={"Video | vibeo - your personal video repository"}>
       <Box
@@ -73,7 +79,14 @@ const Video: NextPage = () => {
 
         <Flex h={"90vh"} justify={"space-between"}>
           <Flex w={"55vw"} direction={"column"} justify={"start"}>
-            <VideoPlayer ref={videoRef} />
+            <VideoPlayer
+              ref={videoRef}
+              color={color}
+              setUndoFunction={(func: () => void) => {
+                setUndo(func);
+              }}
+            />
+            <CanvasToolbar onSetColor={onSetColor} />
             <Card
               flexGrow={1}
               px={8}
