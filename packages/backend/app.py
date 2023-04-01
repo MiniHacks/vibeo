@@ -2,122 +2,44 @@ from pathlib import Path
 import subprocess
 from typing import List
 import re
-from pydantic import BaseModel
+
+from models import Word, Sentence, Section, DownloadRequest
+from utils import extract_wav_from_mp4, parse_srt_to_words, accumulate_words_to_sentences, accumulate_sentences_to_sections, convert_to_seconds
 
 from fastapi import FastAPI
+import os
+import threading
+
+import firebase_admin
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request
+from firebase_admin import credentials
+from firebase_admin import firestore
+from pydantic import BaseModel
+from pytube import YouTube
+
+from backend.stream import *
+
+# take environment variables from ../../.env.
+env_path = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
+FILE_DIR = Path(__file__).parent.parent.parent.absolute().joinpath("videos")
+print("Loading environment variables from", env_path)
+load_dotenv(dotenv_path=env_path)
+
+# Initialize Firebase Admin
+cred = credentials.Certificate({
+    "type": "service_account",
+    "project_id": os.environ['FIREBASE_PROJECT_ID'],
+    "private_key": os.environ['FIREBASE_AUTH_SECRET'].replace('\\n', '\n'),
+    "client_email": os.environ['FIREBASE_CLIENT_EMAIL'],
+    "token_uri": "https://oauth2.googleapis.com/token"
+})
+
+firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 app = FastAPI()
-
-
-class Word(BaseModel):
-    start: float
-    end: float
-    content: str
-
-
-def parse_srt_to_words(srt_content: str) -> List[Word]:
-    pattern = r"(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.+)"
-    matches = re.findall(pattern, srt_content)
-    words = []
-    for start, end, content in matches:
-        start_seconds = convert_to_seconds(start)
-        end_seconds = convert_to_seconds(end)
-        word = Word(start=start_seconds, end=end_seconds, content=content)
-        words.append(word)
-
-    return words
-
-
-class Sentence(BaseModel):
-    start: float
-    end: float
-    content: str
-
-
-def accumulate_words_to_sentences(
-    words: List[Word], end_chars: str = ".!?"
-) -> List[Sentence]:
-    sentences = []
-    sentence_words = []
-
-    for word in words:
-        sentence_words.append(word)
-        if word.content[-1] in end_chars:
-            sentence_content = " ".join(w.content for w in sentence_words)
-            sentence = Sentence(
-                start=sentence_words[0].start,
-                end=sentence_words[-1].end,
-                content=sentence_content,
-            )
-            sentences.append(sentence)
-            sentence_words = []
-
-    if sentence_words:
-        sentence_content = " ".join(w.content for w in sentence_words)
-        sentence = Sentence(
-            start=sentence_words[0].start,
-            end=sentence_words[-1].end,
-            content=sentence_content,
-        )
-        sentences.append(sentence)
-
-    return sentences
-
-
-class Section(BaseModel):
-    start: float
-    end: float
-    content: str
-
-
-def accumulate_sentences_to_sections(
-    sentences: List[Sentence], gap_threshold: float = 2.0
-) -> List[Section]:
-    sections = []
-    section_sentences = []
-
-    for i, sentence in enumerate(sentences[:-1]):
-        section_sentences.append(sentence)
-        gap = sentences[i + 1].start - sentence.end
-
-        if gap > gap_threshold:
-            section_content = " ".join(s.content for s in section_sentences)
-            section = Section(
-                start=section_sentences[0].start,
-                end=section_sentences[-1].end,
-                content=section_content,
-            )
-            sections.append(section)
-            section_sentences = []
-
-    if section_sentences:
-        section_sentences.append(sentences[-1])
-        section_content = " ".join(s.content for s in section_sentences)
-        section = Section(
-            start=section_sentences[0].start,
-            end=section_sentences[-1].end,
-            content=section_content,
-        )
-        sections.append(section)
-
-    return sections
-
-
-def convert_to_seconds(timestamp: str) -> float:
-    hours, minutes, seconds_ms = timestamp.split(":")
-    seconds, ms = seconds_ms.split(",")
-    total_seconds = (
-        int(hours) * 3600 + int(minutes) * 60 + int(seconds) + int(ms) / 1000
-    )
-    return round(total_seconds, 2)
-
-
-def extract_wav_from_mp4(input_mp4: Path, output_wav: Path):
-    cmd = f"ffmpeg -i {input_mp4} -vn -acodec pcm_s16le -ar 16000 -ac 1 -loglevel error -y {output_wav}"
-    subprocess.run(cmd, shell=True)
-
-
-FILE_DIR = Path("backend/test_files/")
 
 
 @app.get("/")
@@ -136,9 +58,9 @@ async def process(vid: str, uid: str):
     srt_file = file_name.with_suffix(".wav.word.srt")
     with srt_file.open("r") as f:
         srt_content = f.read()
-        words = parse_srt_to_words(srt_content)
-        sentences = accumulate_words_to_sentences(words)
-        sections = accumulate_sentences_to_sections(sentences)
+        words: List[Word] = parse_srt_to_words(srt_content)
+        sentences: List[Sentence] = accumulate_words_to_sentences(words)
+        sections: List[Section] = accumulate_sentences_to_sections(sentences)
 
         for x in sentences:
             print(x.content)
@@ -148,3 +70,65 @@ async def process(vid: str, uid: str):
             f"{len(words)} words, {len(sentences)} sentences, {len(sections)} sections"
         )
     return "lgtm"
+
+@app.post("/download")
+async def download_video(request: DownloadRequest):
+    try:
+        yt = YouTube(request.url)
+
+        stream = yt.streams.filter(
+            file_extension="mp4",
+        ).get_highest_resolution()
+
+        time, doc = db.collection("videos").add({
+            "name": stream.title,
+            "type": "youtube",
+            "youtube": request.url,
+            "done": False,
+            "progressMessage": "Downloading",
+            "progress": 0,
+            "uid": request.uid,
+            "created": firestore.SERVER_TIMESTAMP
+        })
+
+        vid = doc.id
+
+        print("Downloading video", doc.id, ":", stream.title)
+
+        def side_process():
+            filename = f"{vid}.mp4"
+            stream.download(
+                output_path=str(FILE_DIR),
+                filename=filename
+            )
+
+        def on_progress(strm, chunk, bytes_remaining):
+            # Do something with the progress
+            print("Download progress", 1 - (bytes_remaining / stream.filesize))
+            doc.update({
+                "progress": 1 - (bytes_remaining / stream.filesize)
+            })
+
+        def on_complete(strm, file_path):
+            # Do something with the downloaded video
+            print("Download completed", file_path)
+            doc.update({
+                "progressMessage": "Processing",
+                "progress": 0
+            })
+
+        yt.register_on_complete_callback(on_complete)
+        yt.register_on_progress_callback(on_progress)
+
+        threading.Thread(target=side_process).start()
+        return {"vid": vid, "success": True}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/video/{filename}")
+async def stream_video(request: Request, filename: str):
+    video_path = os.path.join(FILE_DIR, filename + ".mp4")
+    return range_requests_response(
+        request, file_path=video_path, content_type="video/mp4"
+    )

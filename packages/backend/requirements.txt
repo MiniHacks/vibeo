@@ -2,3 +2,5 @@ fastapi==0.74.0
 uvicorn[standard]==0.17.5
 git+https://github.com/m-bain/whisperx.git
 soundfile
+firebase_admin
+pytube
