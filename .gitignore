@@ -56,8 +56,10 @@ yarn-error.log*
 
 # python
 venv
+env
 *.pyc
 __pycache__
 
 packages/io/dist/
 **/dist/**
+
