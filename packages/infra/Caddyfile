@@ -1,8 +1,12 @@
-vibeo.video
-reverse_proxy 172.0.0.1:3000
+vibeo.video {
+    reverse_proxy localhost:3000
+}
 
-io.vibeo.video
-reverse_proxy 160.94.179.150:40350
+io.vibeo.video {
+    reverse_proxy 160.94.179.150:40350
+}
 
-backend.vibeo.video
-reverse_proxy 160.94.179.150:40349
+backend.vibeo.video {
+    reverse_proxy 160.94.179.150:40349
+}
+
