@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import { useAuth } from "reactfire";
+import { useRouter } from "next/router";
 import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
@@ -26,9 +27,10 @@ const Dashboard: NextPage = () => {
   const auth = useAuth();
 
   const { isOpen, onClose, onOpen } = useDisclosure();
+  const router = useRouter();
 
   const signOut = () => {
-    auth.signOut();
+    auth.signOut().then(() => router.push("/"));
   };
 
   if (loading) {
