@@ -21,3 +21,5 @@ const CurrentProgress = () => {
   const data: VideoDoc[] = [];
   return <Box />;
 };
+
+export default CurrentProgress;
