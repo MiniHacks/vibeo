@@ -12,7 +12,6 @@ const Footer = (): JSX.Element => {
               m={0}
               p={0}
               fontSize={"3xl"}
-              fontFamily={"Patrick Hand"}
               color={"white"}
             >
               vibeo
@@ -22,7 +21,6 @@ const Footer = (): JSX.Element => {
               lineHeight={"100%"}
               m={0}
               p={0}
-              fontFamily={"Poppins"}
               fontWeight={"semibold"}
               color={"white"}
             >
@@ -57,12 +55,7 @@ const Footer = (): JSX.Element => {
                 {" | "}
                 <Link href={"https://devpost.com/software/vibeo"}>devpost</Link>
               </Text>
-              <Text
-                fontWeight={"thin"}
-                fontSize={"xs"}
-                fontFamily={"Poppins"}
-                color={"white"}
-              >
+              <Text fontWeight={"thin"} fontSize={"xs"} color={"white"}>
                 made with vibes for hackprinceton 2023
               </Text>
             </Flex>
