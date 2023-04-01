@@ -1,9 +1,10 @@
 from pathlib import Path
 import subprocess
-from typing import List
+from typing import List, Union
 import os
 import threading
 from itertools import chain
+import logging
 
 
 from dotenv import load_dotenv
@@ -21,6 +22,8 @@ from backend.utils import (
     transcript_from_srt,
 )
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 # take environment variables from ../../.env.
 ENV_PATH = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
@@ -43,7 +46,7 @@ def get_embedding(input: str) -> List[float]:
     embed_response = openai.Embedding.create(
         input=input, model="text-embedding-ada-002"
     )
-    return embed_response.data.embedding  # type: ignore
+    return embed_response.data[0].embedding  # type: ignore
 
 
 def get_embeddings(input: List[str]) -> List[List[float]]:
@@ -76,15 +79,28 @@ async def root():
 
 @app.get("/process")
 async def process(vid: str, uid: str):
+    logger.info(f"Processing video {vid} in collection {uid}")
+
+    logger.info("Extracting audio")
     file_name = (FILE_DIR / vid).with_suffix(".mp4")
+    vid = file_name.stem
     wav_name = file_name.with_suffix(".wav")
     extract_wav_from_mp4(file_name, wav_name)
-    cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter --model {WHISPER__MODEL} --output_dir {FILE_DIR} --output_type srt-word"
-    subprocess.run(cmd, shell=True)
+    logger.info(f"Extracted audio to {wav_name}")
 
-    srt_file = file_name.with_suffix(".wav.word.srt")
+    logger.info("Extracting transcript using whisperx")
+    cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter True --model {WHISPER__MODEL} --output_dir {FILE_DIR} --output_format srt-word"
+    result = subprocess.run(cmd, shell=True)
+    if result.returncode != 0:
+        raise HTTPException(status_code=500, detail="WhisperX failed")
+    logger.info(f"Whispered transcript to {(FILE_DIR / vid).with_suffix('.word.srt')}")
+
+    logger.info("Creating transcript object")
+    srt_file = file_name.with_suffix(".word.srt")
     transcript: Transcript = transcript_from_srt(srt_file)
+    logger.info("Created transcript object")
 
+    logger.info("Generating vectors")
     sections = transcript.sections
     sentences = list(chain.from_iterable([section.sentences for section in sections]))
 
@@ -94,13 +110,7 @@ async def process(vid: str, uid: str):
         {"uid": uid, "vid": vid, "type": "sentence"} for _ in sentences
     ]
     sentence_ids = [f"{vid}_sentence_{i}" for i in range(len(sentences))]
-
-    collection.add(
-        embeddings=sentence_embeddings,
-        documents=sentence_documents,
-        metadatas=sentence_metadatas,  # type: ignore
-        ids=sentence_ids,
-    )
+    logger.info("Generated vectors")
 
     section_embeddings = get_embeddings([section.content for section in sections])
     section_documents = [x.content for x in sections]
@@ -109,22 +119,32 @@ async def process(vid: str, uid: str):
     ]
     section_ids = [f"{vid}_section_{i}" for i in range(len(sections))]
 
+    logger.info("Upserting vectors")
+    collection.add(
+        embeddings=sentence_embeddings,
+        documents=sentence_documents,
+        metadatas=sentence_metadatas,  # type: ignore
+        ids=sentence_ids,
+    )
+
     collection.add(
         embeddings=section_embeddings,
         documents=section_documents,
         metadatas=section_metadatas,  # type: ignore
         ids=section_ids,
     )
+    logger.info("Upserted vectors")
 
     return "lgtm"
 
 
 @app.get("/search")
-async def search(query: str, uid: str, vid: str | None = None):
+async def search(query: str, uid: str, vid: Union[str, None] = None):
     query_embedding = get_embedding(query)
-    collection.query(
-        query_embeddings=query_embedding, n_results=5, where={"source": "my_source"}
+    result = collection.query(
+        query_embeddings=query_embedding, n_results=5, where={"uid": uid}
     )
+    print(result)
 
 
 @app.post("/download")
