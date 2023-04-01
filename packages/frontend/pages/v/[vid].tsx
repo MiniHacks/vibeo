@@ -12,6 +12,7 @@ import VideoPlayer from "../../components/videopage/VideoPlayer";
 import CanvasToolbar from "../../components/videopage/CanvasToolbar";
 import Transcript from "../../components/Transcript";
 import NewNote from "../../components/videopage/NewNote";
+import Notes from "../../components/videopage/Notes";
 
 const Vid: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -116,9 +117,7 @@ const Vid: NextPage = () => {
               <Text fontSize={"xl"} fontWeight={"bold"}>
                 Notes
               </Text>
-              <Text>
-                insert cool component here that shows the annotation notes idk
-              </Text>
+              <Notes videoRef={videoRef} />
             </Card>
           </Flex>
           <Card

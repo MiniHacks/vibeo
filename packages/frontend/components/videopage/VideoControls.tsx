@@ -17,7 +17,7 @@ export type VideoControlsProps = {
   endRecording?: () => void;
 };
 
-const defaultUsers: VideoControlsUser[] = [
+export const defaultUsers: VideoControlsUser[] = [
   {
     id: "1",
     color: "red",
