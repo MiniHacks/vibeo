@@ -10,7 +10,13 @@ const Home: NextPage = () => {
     <PageLayout title={"vibeo"}>
       <Box flexDirection={"column"} minH={"100vh"} display={"flex"}>
         <Box userSelect={"none"} flex={"1"}>
-          <Card w={600} left={100} top={240} position={"absolute"} p={"3em"}>
+          <Card
+            w={600}
+            left={100}
+            top={{ lg: "80px", xl: "200px" }}
+            position={"absolute"}
+            p={"3em"}
+          >
             <Heading flexGrow={1} fontWeight={"normal"} fontSize={"7xl"}>
               vibeo
             </Heading>
@@ -22,16 +28,36 @@ const Home: NextPage = () => {
             </Button>
           </Card>
 
+          <Card left={200} top={1384} p={2} position={"absolute"}>
+            <Image
+              src={"https://via.placeholder.com/439x257"}
+              alt={"placeholder"}
+              width={"100%"}
+              borderRadius={"md"}
+            />
+          </Card>
+
+          <Card left={824} top={1714} p={2} position={"absolute"}>
+            <Image
+              src={"https://via.placeholder.com/439x257"}
+              alt={"placeholder"}
+              width={"100%"}
+              borderRadius={"md"}
+            />
+          </Card>
+
+          <Image
+            fit={"fill"}
+            position={"absolute"}
+            src={"bg-base.png"}
+            zIndex={"-2"}
+          />
           <Image
             fit={"fill"}
             src={"bg-marker.png"}
-            style={{
-              userSelect: "none",
-              position: "absolute",
-              zIndex: "1",
-            }}
+            userSelect={"none"}
+            zIndex={"-1"}
           />
-          <Image fit={"fill"} src={"bg-base.png"} zIndex={"0"} />
         </Box>
       </Box>
       <Footer />
