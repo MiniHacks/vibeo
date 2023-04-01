@@ -1,0 +1,4 @@
+20:52:41.334 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+20:52:41.417 [main] INFO com.firebase.server.forge.App$ - Listening at 127.0.0.1:9000
+20:52:45.118 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO com.firebase.core.namespace.NamespaceActor - vibeo-video-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 64ms, init: 0ms
+20:52:45.150 [NamespaceSystem-blocking-namespace-operation-dispatcher-6] INFO com.firebase.core.namespace.StateManager - Namespace vibeo-video-default-rtdb status Active to Active

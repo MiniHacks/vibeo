@@ -6,17 +6,25 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "functions:build": "tsc --project functions",
+    "functions:build:watch": "tsc --project functions --watch",
+    "functions:serve": "npm run functions:build && firebase emulators:start --only functions",
+    "functions:shell": "npm run functions:build && firebase functions:shell",
+    "functions:logs": "firebase functions:log",
+    "emulators": "firebase emulators:start"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.3.2",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
+    "firebase": "^9.17.2",
     "framer-motion": "^6",
     "next": "12.3.0",
     "next-auth": "^4.19.2",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "reactfire": "^4.2.2"
   },
   "devDependencies": {
     "@types/node": "18.7.18",
@@ -37,6 +45,6 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "prettier": "^2.5.1",
-    "typescript": "4.8.3"
+    "typescript": "^4.9.0"
   }
 }
