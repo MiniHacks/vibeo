@@ -16,9 +16,8 @@ class Word(BaseModel):
 
 
 def parse_srt_to_words(srt_content: str) -> List[Word]:
-    pattern = r"(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(\w+)"
+    pattern = r"(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.+)"
     matches = re.findall(pattern, srt_content)
-
     words = []
     for start, end, content in matches:
         start_seconds = convert_to_seconds(start)
@@ -119,24 +118,33 @@ def extract_wav_from_mp4(input_mp4: Path, output_wav: Path):
 
 
 FILE_DIR = Path("backend/test_files/")
-file_name = FILE_DIR / "feynman.mp4"
-wav_name = file_name.with_suffix(".wav")
-extract_wav_from_mp4(file_name, wav_name)
-cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter --model tiny.en --output_dir {FILE_DIR} --output_type srt-word"
-subprocess.run(cmd, shell=True)
-
-srt_file = file_name.with_suffix(".wav.word.srt")
-with srt_file.open("r") as f:
-    srt_content = f.read()
-    words = parse_srt_to_words(srt_content)
-    sentences = accumulate_words_to_sentences(words)
-    sections = accumulate_sentences_to_sections(sentences)
-
-    print(sentences)
-
-    print(sections)
 
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+@app.get("/process")
+async def process(vid: str, uid: str):
+    file_name = (FILE_DIR / vid).with_suffix(".mp4")
+    wav_name = file_name.with_suffix(".wav")
+    extract_wav_from_mp4(file_name, wav_name)
+    cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter --model tiny.en --output_dir {FILE_DIR} --output_type srt-word"
+    subprocess.run(cmd, shell=True)
+
+    srt_file = file_name.with_suffix(".wav.word.srt")
+    with srt_file.open("r") as f:
+        srt_content = f.read()
+        words = parse_srt_to_words(srt_content)
+        sentences = accumulate_words_to_sentences(words)
+        sections = accumulate_sentences_to_sections(sentences)
+
+        for x in sentences:
+            print(x.content)
+        print(sections)
+
+        print(
+            f"{len(words)} words, {len(sentences)} sentences, {len(sections)} sections"
+        )
+    return "lgtm"
