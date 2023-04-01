@@ -11,8 +11,9 @@ import Button from "../components/Button";
 
 const Home: NextPage = () => {
   return (
-    <PageLayout title={"vibeo"}>
-      <Box flexDirection={"column"} minH={"100vh"} display={"flex"}>
+    <PageLayout title={"vibeo - your personal video repository"}>
+      <Image fit={"fill"} position={"absolute"} src={"bg.svg"} zIndex={"-2"} />
+      <Box flexDirection={"column"} minH={"2150px"} display={"flex"}>
         <Box userSelect={"none"} flex={"1"}>
           <Card
             w={600}
@@ -49,19 +50,6 @@ const Home: NextPage = () => {
               borderRadius={"md"}
             />
           </Card>
-
-          <Image
-            fit={"fill"}
-            position={"absolute"}
-            src={"bg-base.png"}
-            zIndex={"-2"}
-          />
-          <Image
-            fit={"fill"}
-            src={"bg-marker.png"}
-            userSelect={"none"}
-            zIndex={"-1"}
-          />
         </Box>
       </Box>
       <Footer />

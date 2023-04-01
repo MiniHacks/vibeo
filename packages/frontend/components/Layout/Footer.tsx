@@ -1,32 +1,32 @@
-import { Box, Flex, Link, Text } from "@chakra-ui/react";
+import { Box, Flex, Heading, Link, Text } from "@chakra-ui/react";
 import React from "react";
 
 const Footer = (): JSX.Element => {
   return (
     <Flex
-      h={"180px"}
+      h={"400px"}
       bg={"black"}
       direction={"column"}
       justifyContent={"center"}
       py={"8em"}
     >
       <Box px={"4em"} my={"1.5em"}>
-        <Text
+        <Heading
           lineHeight={"100%"}
-          fontSize={"5xl"}
-          fontFamily={"Patrick Hand"}
+          fontSize={"70px"}
           color={"white"}
           mb={"0.25em"}
         >
-          vibeo
-        </Text>
+          vibeo.video
+        </Heading>
         <Text
           letterSpacing={"0.05em"}
-          fontSize={"2xl"}
+          fontSize={"3xl"}
           lineHeight={"100%"}
-          fontFamily={"Poppins"}
           fontWeight={"semibold"}
           color={"white"}
+          mb={10}
+          mt={5}
         >
           by{" "}
           <Text
