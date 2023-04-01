@@ -6,6 +6,9 @@ export default function Button(props: ButtonProps): JSX.Element {
   return (
     <ChakraButton
       as={motion.button}
+      px={4}
+      py={2.5}
+      height={"unset"}
       {...CardProps}
       colorScheme={"purple"}
       whileTap={{

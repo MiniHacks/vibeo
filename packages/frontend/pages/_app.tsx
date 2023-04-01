@@ -46,7 +46,7 @@ function MyApp(props: AppProps): JSX.Element {
     // we can get the host by
     // combining the local emulator host with the Auth port
     const host = getAuthEmulatorHost();
-    connectAuthEmulator(auth, host);
+    connectAuthEmulator(auth, host, { disableWarnings: true });
   }
 
   return (
