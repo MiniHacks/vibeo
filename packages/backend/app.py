@@ -4,21 +4,20 @@ from typing import List
 import os
 import threading
 
-from models import Word, Sentence, Section, DownloadRequest
-from utils import (
+import openai
+from openai import *
+
+from backend.models import Word, Sentence, Section, DownloadRequest
+from backend.utils import (
     extract_wav_from_mp4,
     parse_srt_to_words,
     accumulate_words_to_sentences,
     accumulate_sentences_to_sections,
-    convert_to_seconds,
 )
 
-from fastapi import FastAPI
-import firebase_admin
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import credentials, firestore, initialize_app
 from pytube import YouTube
 
 from backend.stream import *
@@ -28,6 +27,23 @@ env_path = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
 FILE_DIR = Path(__file__).parent.parent.parent.absolute().joinpath("videos")
 print("Loading environment variables from", env_path)
 load_dotenv(dotenv_path=env_path)
+
+openai.api_key = os.environ["OPENAI_KEY"]
+
+openai.Embedding()
+embed_response = openai.Embedding.create(
+    input=["test", "test"]
+    model="text-embedding-ada-002"
+)
+
+def get_embeddings(input: List[str]) -> List[List[float]]:
+    embed_response = openai.Embedding.create(
+        input=input,
+        model="text-embedding-ada-002"
+    )
+    return [x['embedding'] for x in embed_response.data] # type: ignore
+
+
 
 # Initialize Firebase Admin
 cred = credentials.Certificate(
@@ -40,7 +56,7 @@ cred = credentials.Certificate(
     }
 )
 
-firebase_admin.initialize_app(cred)
+initialize_app(cred)
 db = firestore.client()
 app = FastAPI()
 
