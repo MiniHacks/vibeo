@@ -9,6 +9,7 @@ import Button from "../components/Button";
 import VideoControls from "../components/VideoControls";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import VideoPlayer from "../components/VideoPlayer";
+import Transcript from "../components/Transcript";
 
 const Video: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -101,10 +102,7 @@ const Video: NextPage = () => {
             <Text fontSize={"xl"} fontWeight={"bold"}>
               Transcript
             </Text>
-            <Text>
-              timestamp | this is where you would put the component for the
-              transcript :3
-            </Text>
+            <Transcript videoRef={videoRef} />
           </Card>
         </Flex>
       </Box>
