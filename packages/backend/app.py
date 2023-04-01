@@ -86,8 +86,8 @@ async def download_video(request: DownloadRequest):
             # Do something with the downloaded video
             print("Download completed", file_path)
             doc.update({
-                "done": True,
                 "progressMessage": "Processing",
+                "progress": 0
             })
 
         yt.register_on_complete_callback(on_complete)
