@@ -9,12 +9,11 @@ export default function Button(props: ButtonProps): JSX.Element {
       {...CardProps}
       colorScheme={"purple"}
       whileTap={{
-        transform: "translateX(-6px) translateY(6px)",
-        boxShadow: "-4px 6px 0px black",
+        transform: "translateX(-4px) translateY(5px)",
+        boxShadow: "-2px 3px 0px black",
       }}
       transition={{
-        ease: "easeOut",
-        duration: "200ms",
+        type: "spring",
       }}
       {...props}
     />
