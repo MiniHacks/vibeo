@@ -5,6 +5,10 @@ import Footer from "../components/Layout/Footer";
 import Card from "../components/Card";
 import Button from "../components/Button";
 
+// FIXME: turn the imgs into a background img in a box
+// so that the cards no longer have to be positioned absolute
+// and then parallax can be implemented
+
 const Home: NextPage = () => {
   return (
     <PageLayout title={"vibeo"}>
