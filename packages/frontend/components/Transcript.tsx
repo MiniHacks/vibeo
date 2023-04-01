@@ -157,7 +157,7 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
               <Box
                 display={"flex"}
                 alignItems={"baseline"}
-                mt={"2px"}
+                mt={"10px"}
                 onClick={() => handleSentenceClick(sentence.start)}
                 _hover={{ cursor: "pointer" }}
               >
