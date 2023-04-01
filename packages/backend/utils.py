@@ -175,7 +175,6 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     sentences = list(chain.from_iterable([section.sentences for section in sections]))
 
     sentence_embeddings = get_embeddings([sentence.content for sentence in sentences])
-    sentence_documents = [x.content for x in sentences]
     sentence_metadatas: list[dict[str, str]] = [
         {"uid": uid, "vid": vid, "type": "sentence"} for _ in sentences
     ]
@@ -183,7 +182,6 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     logger.info("Generated vectors")
 
     section_embeddings = get_embeddings([section.content for section in sections])
-    section_documents = [x.content for x in sections]
     section_metadatas: list[dict[str, str]] = [
         {"uid": uid, "vid": vid, "type": "section"} for _ in sections
     ]
@@ -192,14 +190,12 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     logger.info("Upserting vectors")
     collection.add(
         embeddings=sentence_embeddings,
-        documents=sentence_documents,
         metadatas=sentence_metadatas,  # type: ignore
         ids=sentence_ids,
     )
 
     collection.add(
         embeddings=section_embeddings,
-        documents=section_documents,
         metadatas=section_metadatas,  # type: ignore
         ids=section_ids,
     )
