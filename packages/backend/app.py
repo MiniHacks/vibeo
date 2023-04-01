@@ -6,7 +6,6 @@ import threading
 from itertools import chain
 import logging
 
-
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from firebase_admin import credentials, firestore, initialize_app
@@ -16,7 +15,7 @@ from chromadb import Client as chroma_client
 from chromadb.config import Settings
 
 from backend.stream import *
-from backend.models import Word, Sentence, Section, Transcript, DownloadRequest
+from backend.models import Transcript, DownloadRequest
 from backend.utils import (
     extract_wav_from_mp4,
     transcript_from_srt,
