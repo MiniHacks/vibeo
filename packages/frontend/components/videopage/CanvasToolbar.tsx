@@ -24,7 +24,7 @@ export default function CanvasToolbar({
 
   const tokens = useToken("colors", colors);
   return (
-    <HStack mt={5} spacing={3} justifyContent={"flex-end"}>
+    <HStack spacing={3} justifyContent={"flex-end"}>
       <Button colorScheme={"yellow"} onClick={() => null}>
         Clear
       </Button>

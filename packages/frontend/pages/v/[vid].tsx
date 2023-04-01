@@ -11,6 +11,7 @@ import { useSignInWithProvider } from "../../lib/hooks/useSignInWithProvider";
 import VideoPlayer from "../../components/videopage/VideoPlayer";
 import CanvasToolbar from "../../components/videopage/CanvasToolbar";
 import Transcript from "../../components/Transcript";
+import NewNote from "../../components/videopage/NewNote";
 
 const Vid: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -95,7 +96,12 @@ const Vid: NextPage = () => {
                     setUndo(func);
                   }}
                 />
-                <CanvasToolbar onSetColor={onSetColor} />
+                <Flex direction={"row"} justify={"space-between"} mt={4}>
+                  <NewNote addNote={() => console.log("note added")} />
+                  <Flex direction={"column"} justify={"center"} ml={5}>
+                    <CanvasToolbar onSetColor={onSetColor} />
+                  </Flex>
+                </Flex>
               </>
             )}
             <Card
