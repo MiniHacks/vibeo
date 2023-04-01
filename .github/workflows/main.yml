@@ -1,0 +1,20 @@
+name: Deploy to Server
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: SSH into server
+        run: |
+          cd vibeo/packages/frontend
+          git pull
+          yarn build
+          pm2 restart vibeo
