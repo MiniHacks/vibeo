@@ -1,4 +1,12 @@
-import { Box, Flex, HStack, Link, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  HStack,
+  Link,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import React from "react";
 
 const Footer = (): JSX.Element => {
@@ -7,7 +15,7 @@ const Footer = (): JSX.Element => {
       <Flex h={"160px"} bg={"black"} justifyContent={"center"}>
         <HStack justifyContent={"space-between"}>
           <VStack alignItems={"left"}>
-            <Text
+            <Heading
               lineHeight={"100%"}
               m={0}
               p={0}
@@ -15,7 +23,7 @@ const Footer = (): JSX.Element => {
               color={"white"}
             >
               vibeo
-            </Text>
+            </Heading>
             <Text
               letterSpacing={"0.05em"}
               lineHeight={"100%"}

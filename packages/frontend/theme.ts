@@ -15,7 +15,7 @@ export default extendTheme({
   },
   // font family:
   fonts: {
-    heading: "'Patrick Hand'",
+    heading: "Patrick Hand",
     body: "Poppins",
   },
 });
