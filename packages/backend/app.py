@@ -4,8 +4,8 @@ from typing import List
 import os
 import threading
 
-from models import Word, Sentence, Section, DownloadRequest
-from utils import (
+from backend.models import Word, Sentence, Section, DownloadRequest
+from backend.utils import (
     extract_wav_from_mp4,
     parse_srt_to_words,
     accumulate_words_to_sentences,

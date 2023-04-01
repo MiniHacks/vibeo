@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 import subprocess
 
-from models import Word, Sentence, Section
+from backend.models import Word, Sentence, Section
 
 
 def extract_wav_from_mp4(input_mp4: Path, output_wav: Path):

@@ -8,6 +8,7 @@ import {
   Image,
   Wrap,
   WrapItem,
+  useDisclosure,
 } from "@chakra-ui/react";
 import React from "react";
 import { useAuth } from "reactfire";
@@ -16,12 +17,15 @@ import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
+import AddVideoModal from "../components/AddVideoModal";
 
 const Dashboard: NextPage = () => {
   const { authUser, loading } = useAuthUser();
   // login with oauth
   const [signInWithProvider] = useSignInWithProvider();
   const auth = useAuth();
+
+  const { isOpen, onClose, onOpen } = useDisclosure();
 
   const signOut = () => {
     auth.signOut();
@@ -67,7 +71,7 @@ const Dashboard: NextPage = () => {
             Logout
           </Button>
         </HStack>
-        <Button my={6} colorScheme={"green"}>
+        <Button my={6} colorScheme={"green"} onClick={onOpen}>
           Add Video
         </Button>
         <Wrap overflow={"unset"} spacing={6}>
@@ -89,6 +93,7 @@ const Dashboard: NextPage = () => {
           </WrapItem>
         </Wrap>
       </Box>
+      <AddVideoModal open={isOpen} onClose={onClose} />
     </PageLayout>
   );
 };
