@@ -173,21 +173,17 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
                     return (
                       <>
                         <Text
-                          style={{
-                            backgroundColor: isCurrentWord
-                              ? "yellow"
-                              : "transparent",
-                          }}
+                          bgColor={isCurrentWord ? "yellow" : "transparent"}
+                          _hover={{ bgColor: "yellow" }}
                         >
                           {word.content}
                         </Text>
                         <Text
-                          style={{
-                            backgroundColor:
-                              isCurrentWord && isNextWordHighlighted
-                                ? "yellow"
-                                : "transparent",
-                          }}
+                          bgColor={
+                            isCurrentWord && isNextWordHighlighted
+                              ? "yellow"
+                              : "transparent"
+                          }
                         >
                           &nbsp;
                         </Text>
