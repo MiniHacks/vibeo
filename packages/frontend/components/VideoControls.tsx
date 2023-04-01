@@ -45,9 +45,9 @@ const VideoControls = ({
   videoTitle,
   users = defaultUsers,
 }: VideoControlsProps): JSX.Element => {
-  const [progress, setProgress] = useState(0.4);
+  const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [isPaused, setPaused] = useState(false);
+  const [isPaused, setPaused] = useState(true);
 
   useEffect(() => {
     const updateProgress = () => {
