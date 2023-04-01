@@ -10,21 +10,23 @@ from fastapi import FastAPI, HTTPException, Request
 from firebase_admin import credentials, firestore, initialize_app
 from pytube import YouTube
 import openai
-from openai import *
-import chromadb
+from chromadb import Client as chroma_client
+from chromadb.utils import embedding_functions
 
 from backend.stream import *
 from backend.models import Word, Sentence, Section, Transcript, DownloadRequest
 from backend.utils import (
     extract_wav_from_mp4,
-    parse_srt_to_words,
-    accumulate_words_to_sentences,
-    accumulate_sentences_to_sections,
     transcript_from_srt,
 )
 
-db_client = chromadb.Client()
-collection = db_client.create_collection("transcripts")
+
+db_client = chroma_client()
+
+openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+    api_key="YOUR_API_KEY", model_name="text-embedding-ada-002"
+)
+collection = db_client.create_collection("transcripts", embedding_function=openai_ef)
 
 # take environment variables from ../../.env.
 env_path = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
