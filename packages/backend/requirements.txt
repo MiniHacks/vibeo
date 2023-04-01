@@ -4,3 +4,4 @@ git+https://github.com/m-bain/whisperx.git
 soundfile
 firebase_admin
 pytube
+python-dotenv

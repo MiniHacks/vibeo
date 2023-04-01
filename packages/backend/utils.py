@@ -5,9 +5,11 @@ import subprocess
 
 from models import Word, Sentence, Section
 
+
 def extract_wav_from_mp4(input_mp4: Path, output_wav: Path):
     cmd = f"ffmpeg -i {input_mp4} -vn -acodec pcm_s16le -ar 16000 -ac 1 -loglevel error -y {output_wav}"
     subprocess.run(cmd, shell=True)
+
 
 def parse_srt_to_words(srt_content: str) -> List[Word]:
     pattern = r"(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.+)"
@@ -20,6 +22,7 @@ def parse_srt_to_words(srt_content: str) -> List[Word]:
         words.append(word)
 
     return words
+
 
 def accumulate_words_to_sentences(
     words: List[Word], end_chars: str = ".!?"
@@ -49,6 +52,7 @@ def accumulate_words_to_sentences(
         sentences.append(sentence)
 
     return sentences
+
 
 def accumulate_sentences_to_sections(
     sentences: List[Sentence], gap_threshold: float = 2.0
@@ -82,6 +86,7 @@ def accumulate_sentences_to_sections(
 
     return sections
 
+
 def convert_to_seconds(timestamp: str) -> float:
     hours, minutes, seconds_ms = timestamp.split(":")
     seconds, ms = seconds_ms.split(",")
@@ -89,4 +94,3 @@ def convert_to_seconds(timestamp: str) -> float:
         int(hours) * 3600 + int(minutes) * 60 + int(seconds) + int(ms) / 1000
     )
     return round(total_seconds, 2)
-

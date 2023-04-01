@@ -1,21 +1,24 @@
 from pathlib import Path
 import subprocess
 from typing import List
-import re
-
-from models import Word, Sentence, Section, DownloadRequest
-from utils import extract_wav_from_mp4, parse_srt_to_words, accumulate_words_to_sentences, accumulate_sentences_to_sections, convert_to_seconds
-
-from fastapi import FastAPI
 import os
 import threading
 
+from models import Word, Sentence, Section, DownloadRequest
+from utils import (
+    extract_wav_from_mp4,
+    parse_srt_to_words,
+    accumulate_words_to_sentences,
+    accumulate_sentences_to_sections,
+    convert_to_seconds,
+)
+
+from fastapi import FastAPI
 import firebase_admin
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from firebase_admin import credentials
 from firebase_admin import firestore
-from pydantic import BaseModel
 from pytube import YouTube
 
 from backend.stream import *
@@ -27,18 +30,18 @@ print("Loading environment variables from", env_path)
 load_dotenv(dotenv_path=env_path)
 
 # Initialize Firebase Admin
-cred = credentials.Certificate({
-    "type": "service_account",
-    "project_id": os.environ['FIREBASE_PROJECT_ID'],
-    "private_key": os.environ['FIREBASE_AUTH_SECRET'].replace('\\n', '\n'),
-    "client_email": os.environ['FIREBASE_CLIENT_EMAIL'],
-    "token_uri": "https://oauth2.googleapis.com/token"
-})
+cred = credentials.Certificate(
+    {
+        "type": "service_account",
+        "project_id": os.environ["FIREBASE_PROJECT_ID"],
+        "private_key": os.environ["FIREBASE_AUTH_SECRET"].replace("\\n", "\n"),
+        "client_email": os.environ["FIREBASE_CLIENT_EMAIL"],
+        "token_uri": "https://oauth2.googleapis.com/token",
+    }
+)
 
 firebase_admin.initialize_app(cred)
-
 db = firestore.client()
-
 app = FastAPI()
 
 
@@ -71,6 +74,7 @@ async def process(vid: str, uid: str):
         )
     return "lgtm"
 
+
 @app.post("/download")
 async def download_video(request: DownloadRequest):
     try:
@@ -80,16 +84,18 @@ async def download_video(request: DownloadRequest):
             file_extension="mp4",
         ).get_highest_resolution()
 
-        time, doc = db.collection("videos").add({
-            "name": stream.title,
-            "type": "youtube",
-            "youtube": request.url,
-            "done": False,
-            "progressMessage": "Downloading",
-            "progress": 0,
-            "uid": request.uid,
-            "created": firestore.SERVER_TIMESTAMP
-        })
+        time, doc = db.collection("videos").add(
+            {
+                "name": stream.title,
+                "type": "youtube",
+                "youtube": request.url,
+                "done": False,
+                "progressMessage": "Downloading",
+                "progress": 0,
+                "uid": request.uid,
+                "created": firestore.SERVER_TIMESTAMP,
+            }
+        )
 
         vid = doc.id
 
@@ -97,25 +103,17 @@ async def download_video(request: DownloadRequest):
 
         def side_process():
             filename = f"{vid}.mp4"
-            stream.download(
-                output_path=str(FILE_DIR),
-                filename=filename
-            )
+            stream.download(output_path=str(FILE_DIR), filename=filename)
 
         def on_progress(strm, chunk, bytes_remaining):
             # Do something with the progress
             print("Download progress", 1 - (bytes_remaining / stream.filesize))
-            doc.update({
-                "progress": 1 - (bytes_remaining / stream.filesize)
-            })
+            doc.update({"progress": 1 - (bytes_remaining / stream.filesize)})
 
         def on_complete(strm, file_path):
             # Do something with the downloaded video
             print("Download completed", file_path)
-            doc.update({
-                "progressMessage": "Processing",
-                "progress": 0
-            })
+            doc.update({"progressMessage": "Processing", "progress": 0})
 
         yt.register_on_complete_callback(on_complete)
         yt.register_on_progress_callback(on_progress)
