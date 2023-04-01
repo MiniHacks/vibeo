@@ -7,3 +7,4 @@ firebase_admin
 pytube
 python-dotenv
 chromadb
+openai[embeddings]

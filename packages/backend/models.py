@@ -13,11 +13,19 @@ class Sentence(BaseModel):
     end: float
     words: List[Word]
 
+    @property
+    def content(self) -> str:
+        return " ".join([word.content for word in self.words])
+
 
 class Section(BaseModel):
     start: float
     end: float
     sentences: List[Sentence]
+
+    @property
+    def content(self) -> str:
+        return " ".join([sentence.content for sentence in self.sentences])
 
 
 class Transcript(BaseModel):

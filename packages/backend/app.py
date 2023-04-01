@@ -3,16 +3,18 @@ import subprocess
 from typing import List
 import os
 import threading
+from itertools import chain
 
 import openai
 from openai import *
 
-from backend.models import Word, Sentence, Section, DownloadRequest
+from backend.models import Word, Sentence, Section, Transcript, DownloadRequest
 from backend.utils import (
     extract_wav_from_mp4,
     parse_srt_to_words,
     accumulate_words_to_sentences,
     accumulate_sentences_to_sections,
+    transcript_from_srt
 )
 
 from dotenv import load_dotenv
@@ -75,19 +77,13 @@ async def process(vid: str, uid: str):
     subprocess.run(cmd, shell=True)
 
     srt_file = file_name.with_suffix(".wav.word.srt")
-    with srt_file.open("r") as f:
-        srt_content = f.read()
-        words: List[Word] = parse_srt_to_words(srt_content)
-        sentences: List[Sentence] = accumulate_words_to_sentences(words)
-        sections: List[Section] = accumulate_sentences_to_sections(sentences)
+    transcript: Transcript = transcript_from_srt(srt_file)
+    sections = transcript.sections
+    sentences = chain.from_iterable([section.sentences for section in sections])
 
-        for x in sentences:
-            print(x.content)
-        print(sections)
-
-        print(
-            f"{len(words)} words, {len(sentences)} sentences, {len(sections)} sections"
-        )
+    section_embeddings = get_embeddings([section.content for section in sections])
+    sentence_embeddings = get_embeddings([sentence.content for sentence in sentences])
+    
     return "lgtm"
 
 
