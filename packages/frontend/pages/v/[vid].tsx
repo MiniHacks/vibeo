@@ -22,6 +22,8 @@ const Vid: NextPage = () => {
   const [color, setColor] = useState<string>("red");
   const voidFunc = () => {};
   const [undo, setUndo] = useState<() => void>(voidFunc);
+  const [isRecording, setRecording] = useState(false);
+  const [isAudioOnly, setAudioOnly] = useState(false);
 
   const share = () => {};
 
@@ -70,7 +72,12 @@ const Vid: NextPage = () => {
       >
         <Flex mb={10}>
           <Box flexGrow={1}>
-            <VideoControls videoRef={videoRef} />
+            <VideoControls
+              videoRef={videoRef}
+              endRecording={() =>
+                console.log("Yoo use this to stop the recording")
+              }
+            />
           </Box>
           <Button px={12} ml={10} onClick={share}>
             <Text fontSize={"2xl"}>Share</Text>
@@ -79,19 +86,23 @@ const Vid: NextPage = () => {
 
         <Flex h={"90vh"} justify={"space-between"}>
           <Flex w={"55vw"} direction={"column"} justify={"start"}>
-            <VideoPlayer
-              ref={videoRef}
-              color={color}
-              setUndoFunction={(func: () => void) => {
-                setUndo(func);
-              }}
-            />
-            <CanvasToolbar onSetColor={onSetColor} />
+            {!isAudioOnly && (
+              <>
+                <VideoPlayer
+                  ref={videoRef}
+                  color={color}
+                  setUndoFunction={(func) => {
+                    setUndo(func);
+                  }}
+                />
+                <CanvasToolbar onSetColor={onSetColor} />
+              </>
+            )}
             <Card
               flexGrow={1}
               px={8}
               py={4}
-              mt={8}
+              mt={!isAudioOnly ? 8 : 0}
               borderBottomLeftRadius={"0px"}
               borderBottomRightRadius={"0px"}
               borderBottom={"0px"}

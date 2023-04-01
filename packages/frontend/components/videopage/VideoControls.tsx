@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */ // 😡 ESlint was getting on my nerves with this one.
 import { Box, Text, Image } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -10,10 +11,10 @@ export type VideoControlsUser = {
 };
 
 export type VideoControlsProps = {
-  // eslint-disable-next-line react/no-unused-prop-types
   videoRef: React.RefObject<HTMLVideoElement> | null;
   videoTitle?: string;
   users?: VideoControlsUser[];
+  endRecording?: () => void;
 };
 
 const defaultUsers: VideoControlsUser[] = [
@@ -44,6 +45,7 @@ const VideoControls = ({
   videoRef,
   videoTitle,
   users = defaultUsers,
+  endRecording,
 }: VideoControlsProps): JSX.Element => {
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -188,10 +190,29 @@ const VideoControls = ({
           padding={"5px"}
         >
           <motion.div
-            onClick={handlePauseClick}
+            onClick={
+              videoRef?.current == null ? endRecording : handlePauseClick
+            }
             style={{ display: "flex", alignItems: "center" }}
           >
-            {isPaused ? (
+            {videoRef?.current == null ? (
+              <motion.svg
+                xmlns={"http://www.w3.org/2000/svg"}
+                width={"18"}
+                height={"18"}
+                viewBox={"0 0 18 18"}
+                initial={"hidden"}
+                animate={"visible"}
+                exit={"hidden"}
+              >
+                <path
+                  d={
+                    "M6.71037 0.446894C6.61189 0.46279 6.51459 0.485244 6.41911 0.514107C5.91371 0.627926 5.46337 0.913375 5.14474 1.32187C4.82612 1.73036 4.6589 2.23665 4.67156 2.75455V7.23545C4.67156 7.82965 4.90761 8.39952 5.32777 8.81968C5.74794 9.23985 6.3178 9.4759 6.91201 9.4759C7.50621 9.4759 8.07608 9.23985 8.49624 8.81968C8.91641 8.39952 9.15246 7.82965 9.15246 7.23545V2.75455C9.16329 2.43697 9.10645 2.12071 8.9857 1.82678C8.86495 1.53285 8.68306 1.26796 8.45209 1.04971C8.22113 0.83146 7.94638 0.664838 7.64609 0.560906C7.3458 0.456974 7.02683 0.41811 6.71037 0.446894ZM0.974823 4.995C0.742958 5.07295 0.542979 5.22464 0.405429 5.42692C0.26788 5.6292 0.200321 5.87094 0.213071 6.11522V7.23545C0.213071 10.5513 2.65516 13.2623 5.81419 13.8224V16.1972H4.69397C3.46172 16.1972 2.45352 17.2054 2.45352 18.4377H11.4377C11.4377 17.2054 10.4295 16.1972 9.19726 16.1972H8.07704V13.8224C11.2361 13.2847 13.6782 10.5513 13.6782 7.23545V6.11522C13.6782 5.81812 13.5601 5.53319 13.3501 5.32311C13.14 5.11302 12.855 4.995 12.5579 4.995C12.2608 4.995 11.9759 5.11302 11.7658 5.32311C11.5557 5.53319 11.4377 5.81812 11.4377 6.11522V7.23545C11.4377 9.72234 9.44371 11.7163 6.95682 11.7163C4.46992 11.7163 2.47592 9.72234 2.47592 7.23545V6.11522C2.47863 5.9495 2.44454 5.78524 2.37609 5.63428C2.30764 5.48333 2.20655 5.34945 2.0801 5.24229C1.95365 5.13513 1.805 5.05736 1.64486 5.0146C1.48473 4.97184 1.3171 4.96514 1.15406 4.995C1.10929 4.99231 1.0644 4.99231 1.01963 4.995H0.974823Z"
+                  }
+                  fill={"black"}
+                />
+              </motion.svg>
+            ) : isPaused ? (
               <motion.svg
                 xmlns={"http://www.w3.org/2000/svg"}
                 width={"18"}
