@@ -12,7 +12,7 @@ import openai
 
 from backend.models import DownloadRequest
 from backend.stream import *
-from backend.utils import get_embedding, get_embeddings, process
+from backend.utils import get_embedding, process_video
 from backend.constants import ENV_PATH, FILE_DIR
 from backend.connections import db, collection
 
@@ -37,10 +37,59 @@ async def root():
 @app.get("/search")
 async def search(query: str, uid: str, vid: Union[str, None] = None):
     query_embedding = get_embedding(query)
-    result = collection.query(
-        query_embeddings=query_embedding, n_results=5, where={"uid": uid}
-    )
-    print(result)
+    try:
+        sentence_results = collection.query(
+            query_embeddings=query_embedding,
+            n_results=5,
+            where={"uid": uid, "type": "sentence"},
+        )
+        sentence_ids = sentence_results["ids"][0]
+    except Exception as e:
+        logger.error(e)
+        sentence_ids = []
+    try:
+        section_results = collection.query(
+            query_embeddings=query_embedding,
+            n_results=5,
+            where={"uid": uid, "type": "section"},
+        )
+        section_ids = section_results["ids"][0]
+    except Exception as e:
+        logger.error(e)
+        section_results = []
+        section_ids = []
+
+    relevant_sentences = []
+    for id in sentence_ids:
+        vid, _, index = id.split("_")
+        doc_ref = db.collection("videos").document(vid)
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            continue
+
+        doc = doc.to_dict()
+        sentence = doc["sentences"][int(index)]
+        relevant_sentences.append({"id": vid, "sentence": sentence})
+
+    relevant_sections = []
+    for id in section_ids:
+        vid, _, index = id.split("_")
+        doc_ref = db.collection("videos").document(vid)
+        doc = doc_ref.get()
+
+        if not doc.exists:
+            continue
+
+        doc = doc.to_dict()
+        section = doc["sections"][int(index)]
+        section = doc["sections"][int(index)]
+        relevant_sections.append({"id": vid, "section": section})
+
+    return {
+        "sentences": relevant_sentences,
+        "sections": relevant_sections,
+    }
 
 
 @app.post("/download")
@@ -83,7 +132,7 @@ async def download_video(request: DownloadRequest):
             # Do something with the downloaded video
             print("Download completed", file_path)
             doc.update({"progressMessage": "Processing", "progress": 0})
-            process(file_path, request.uid, doc)
+            process_video(file_path, request.uid, doc)
 
         yt.register_on_complete_callback(on_complete)
         yt.register_on_progress_callback(on_progress)
