@@ -61,3 +61,6 @@ __pycache__
 
 packages/io/dist/
 **/dist/**
+
+videos/*
+**.log
