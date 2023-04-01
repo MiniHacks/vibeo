@@ -18,7 +18,7 @@ from chromadb import Client as chroma_client
 from chromadb.config import Settings
 
 from backend.stream import *
-from backend.models import Word, Sentence, Section, Transcript, DownloadRequest
+from backend.models import Transcript, DownloadRequest
 from backend.utils import (
     extract_wav_from_mp4,
     transcript_from_srt,

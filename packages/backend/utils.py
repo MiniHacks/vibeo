@@ -3,8 +3,7 @@ import re
 from pathlib import Path
 import subprocess
 
-from backend.models import Word, Sentence, Section, Transcript
-from sqlalchemy import Transaction
+from backend.models import Word, Sentence, Section
 
 
 def extract_wav_from_mp4(input_mp4: Path, output_wav: Path):
