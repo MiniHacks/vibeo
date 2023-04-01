@@ -37,11 +37,7 @@ export default function SearchBar({
         bg={"transparent"}
         border={"none"}
       >
-<<<<<<< HEAD
-        <Image src={"search.svg"} />
-=======
         <Image alt={"magnifying glass search icon"} src={"search.svg"} />
->>>>>>> daa33538599e813d8f23775c2756e42ffbe97130
       </InputRightElement>
     </InputGroup>
   );
