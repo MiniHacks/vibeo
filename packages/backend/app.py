@@ -1,9 +1,6 @@
-from itertools import chain
-from pathlib import Path
 from typing import Union
 import logging
 import os
-import subprocess
 import threading
 
 from dotenv import load_dotenv
