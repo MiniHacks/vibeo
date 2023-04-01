@@ -5,6 +5,7 @@ import os
 import threading
 from itertools import chain
 
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from firebase_admin import credentials, firestore, initialize_app
@@ -22,16 +23,20 @@ from backend.utils import (
 
 
 # take environment variables from ../../.env.
-env_path = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
+ENV_PATH = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
 FILE_DIR = Path(__file__).parent.parent.parent.absolute().joinpath("videos")
-print("Loading environment variables from", env_path)
-load_dotenv(dotenv_path=env_path)
+WHISPER__MODEL = "tiny.en"
+
+print("Loading environment variables from", ENV_PATH)
+load_dotenv(dotenv_path=ENV_PATH)
 
 openai.api_key = os.environ["OPENAI_KEY"]
 
-db_client = chroma_client(Settings(persist_directory=str(FILE_DIR)))
+db_client = chroma_client(
+    Settings(chroma_db_impl="duckdb+parquet", persist_directory=str(FILE_DIR))
+)
 
-collection = db_client.create_collection("transcripts")
+collection = db_client.get_or_create_collection("transcripts")
 
 
 def get_embedding(input: str) -> List[float]:
@@ -74,7 +79,7 @@ async def process(vid: str, uid: str):
     file_name = (FILE_DIR / vid).with_suffix(".mp4")
     wav_name = file_name.with_suffix(".wav")
     extract_wav_from_mp4(file_name, wav_name)
-    cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter --model tiny.en --output_dir {FILE_DIR} --output_type srt-word"
+    cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter --model {WHISPER__MODEL} --output_dir {FILE_DIR} --output_type srt-word"
     subprocess.run(cmd, shell=True)
 
     srt_file = file_name.with_suffix(".wav.word.srt")
