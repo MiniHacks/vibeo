@@ -10,7 +10,7 @@ export default extendTheme({
       },
     }),
   },
-  color: {
+  colors: {
     brand: "#FFC700",
   },
   // font family:
