@@ -18,6 +18,7 @@ import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import SearchBar from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
 
@@ -76,6 +77,19 @@ const Dashboard: NextPage = () => {
     );
   }
 
+  const filterSearch = (qry: string): void => {
+    console.log("Searching for: ", qry);
+    if (qry.includes("?")) {
+      console.log("This is a context search query.");
+    } else {
+      console.log("This is a filter search query.");
+    }
+  };
+
+  // shows tooltip upon question search query
+
+  // const showCards = () => {};
+
   return (
     <PageLayout title={"dashboard | vibeo - your personal video repository"}>
       <Box px={[5, 10]} py={10}>
@@ -88,9 +102,19 @@ const Dashboard: NextPage = () => {
             Logout
           </Button>
         </HStack>
-        <Button my={6} colorScheme={"green"} onClick={onOpen}>
-          Add Video
-        </Button>
+        <HStack>
+          <Button my={6} colorScheme={"green"} onClick={onOpen}>
+            Add Video
+          </Button>
+          <SearchBar
+            onSearch={filterSearch}
+            ml={2}
+            py={5}
+            placeholder={
+              "Where are Sasha and Samyok being insufferable people?"
+            }
+          />
+        </HStack>
         <Wrap overflow={"unset"} spacing={6}>
           <WrapItem>
             <Card p={2} w={328}>
