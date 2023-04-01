@@ -5,10 +5,13 @@ import os
 import threading
 from itertools import chain
 import logging
+from random import random
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from firebase_admin import credentials, firestore, initialize_app
+
+from google.cloud.firestore import DocumentReference
 from pytube import YouTube
 import openai
 from chromadb import Client as chroma_client
@@ -76,8 +79,7 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/process")
-async def process(vid: str, uid: str):
+def process(vid: str, uid: str, doc: DocumentReference):
     logger.info(f"Processing video {vid} in collection {uid}")
 
     logger.info("Extracting audio")
@@ -86,6 +88,7 @@ async def process(vid: str, uid: str):
     wav_name = file_name.with_suffix(".wav")
     extract_wav_from_mp4(file_name, wav_name)
     logger.info(f"Extracted audio to {wav_name}")
+    doc.update({"progress": random() * 0.2 + 0.2})
 
     logger.info("Extracting transcript using whisperx")
     cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter True --model {WHISPER__MODEL} --output_dir {FILE_DIR} --output_format srt-word"
@@ -93,11 +96,18 @@ async def process(vid: str, uid: str):
     if result.returncode != 0:
         raise HTTPException(status_code=500, detail="WhisperX failed")
     logger.info(f"Whispered transcript to {(FILE_DIR / vid).with_suffix('.word.srt')}")
+    doc.update({"progress": random() * 0.1 + 0.7})
 
     logger.info("Creating transcript object")
     srt_file = file_name.with_suffix(".word.srt")
     transcript: Transcript = transcript_from_srt(srt_file)
     logger.info("Created transcript object")
+    doc.update({"progress": random() * 0.1 + 0.8})
+
+    logger.info("Upserting transcript to firestore")
+    doc.update({"transcript": transcript.dict()})
+    logger.info("Upserted transcript to firestore")
+    doc.update({"progress": 1})
 
     logger.info("Generating vectors")
     sections = transcript.sections
@@ -186,6 +196,7 @@ async def download_video(request: DownloadRequest):
             # Do something with the downloaded video
             print("Download completed", file_path)
             doc.update({"progressMessage": "Processing", "progress": 0})
+            process(file_path, request.uid, doc)
 
         yt.register_on_complete_callback(on_complete)
         yt.register_on_progress_callback(on_progress)
