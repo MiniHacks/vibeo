@@ -48,6 +48,7 @@ const VideoControls = ({
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isPaused, setPaused] = useState(true);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     const updateProgress = () => {
@@ -57,18 +58,30 @@ const VideoControls = ({
       }
     };
 
+    const updateDuration = () => {
+      const newDuration = videoRef?.current?.duration || null;
+      if (newDuration) {
+        setDuration(newDuration);
+      }
+    };
+
     const handleVideoEnd = () => {
       setPaused(true);
     };
 
+    const onUpdate = () => {
+      updateProgress();
+      updateDuration();
+    };
+
     if (videoRef?.current) {
-      videoRef.current.addEventListener("timeupdate", updateProgress);
+      videoRef.current.addEventListener("timeupdate", onUpdate);
       videoRef.current.addEventListener("ended", handleVideoEnd);
     }
 
     return () => {
       if (videoRef?.current) {
-        videoRef.current.removeEventListener("timeupdate", updateProgress);
+        videoRef.current.removeEventListener("timeupdate", onUpdate);
         videoRef.current.removeEventListener("ended", handleVideoEnd);
       }
     };
@@ -125,15 +138,6 @@ const VideoControls = ({
     const seconds = Math.floor(timeInSeconds % 60);
     return `${minutes.toString()}:${seconds.toString().padStart(2, "0")}`;
   };
-
-  const [duration, setDuration] = useState(0);
-
-  useEffect(() => {
-    const newDuration = videoRef?.current?.duration || null;
-    if (newDuration) {
-      setDuration(newDuration);
-    }
-  }, [videoRef]);
 
   const progressInSeconds = Math.round(progress * duration);
   const formattedProgressTime = formatTime(progressInSeconds);

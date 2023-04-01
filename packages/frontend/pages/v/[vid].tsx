@@ -10,6 +10,7 @@ import VideoControls from "../../components/videopage/VideoControls";
 import { useSignInWithProvider } from "../../lib/hooks/useSignInWithProvider";
 import VideoPlayer from "../../components/videopage/VideoPlayer";
 import CanvasToolbar from "../../components/videopage/CanvasToolbar";
+import Transcript from "../components/Transcript";
 
 const Vid: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -114,10 +115,7 @@ const Vid: NextPage = () => {
             <Text fontSize={"xl"} fontWeight={"bold"}>
               Transcript
             </Text>
-            <Text>
-              timestamp | this is where you would put the component for the
-              transcript :3
-            </Text>
+            <Transcript videoRef={videoRef} />
           </Card>
         </Flex>
       </Box>
