@@ -14,7 +14,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: SSH into server
         run: |
-          cd vibeo/packages/frontend
+          cd ~/vibeo/packages/frontend
           git pull
           yarn build
-          pm2 restart vibeo
+          pm2 restart vibeo --update-env
