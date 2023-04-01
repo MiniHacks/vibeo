@@ -115,16 +115,6 @@ const VideoControls = ({
   const formattedProgressTime = formatTime(progressInSeconds);
   const formattedDurationTime = formatTime(Math.round(duration));
 
-  const svg1Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  };
-
-  const svg2Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-  };
-
   return (
     <Box
       position={"absolute"}
@@ -156,7 +146,6 @@ const VideoControls = ({
                 width="18"
                 height="18"
                 viewBox="0 0 18 18"
-                variants={svg1Variants}
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
@@ -172,7 +161,6 @@ const VideoControls = ({
                 width="18"
                 height="18"
                 viewBox="0 0 18 18"
-                variants={svg2Variants}
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
