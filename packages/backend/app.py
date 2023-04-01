@@ -24,13 +24,15 @@ async def download_video(request: DownloadRequest):
     try:
         yt = YouTube(request.url)
 
-        stream = yt.streams.get_highest_resolution()
+        stream = yt.streams.filter(
+            file_extension="mp4",
+        ).get_highest_resolution()
 
         print("Downloading video", stream.filesize, stream.title, stream.url)
 
         def side_process():
             output_path = pathlib.Path(__file__).parent.parent.parent.absolute().joinpath("videos")
-            filename = f"{request.vid}"
+            filename = f"{request.vid}.mp4"
             stream.download(
                 output_path=str(output_path),
                 filename=filename
