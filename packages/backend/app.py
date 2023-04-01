@@ -5,24 +5,26 @@ import os
 import threading
 from itertools import chain
 
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request
+from firebase_admin import credentials, firestore, initialize_app
+from pytube import YouTube
 import openai
 from openai import *
+import chromadb
 
+from backend.stream import *
 from backend.models import Word, Sentence, Section, Transcript, DownloadRequest
 from backend.utils import (
     extract_wav_from_mp4,
     parse_srt_to_words,
     accumulate_words_to_sentences,
     accumulate_sentences_to_sections,
-    transcript_from_srt
+    transcript_from_srt,
 )
 
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
-from firebase_admin import credentials, firestore, initialize_app
-from pytube import YouTube
-
-from backend.stream import *
+db_client = chromadb.Client()
+collection = db_client.create_collection("transcripts")
 
 # take environment variables from ../../.env.
 env_path = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
@@ -32,19 +34,12 @@ load_dotenv(dotenv_path=env_path)
 
 openai.api_key = os.environ["OPENAI_KEY"]
 
-openai.Embedding()
-embed_response = openai.Embedding.create(
-    input=["test", "test"]
-    model="text-embedding-ada-002"
-)
 
 def get_embeddings(input: List[str]) -> List[List[float]]:
     embed_response = openai.Embedding.create(
-        input=input,
-        model="text-embedding-ada-002"
+        input=input, model="text-embedding-ada-002"
     )
-    return [x['embedding'] for x in embed_response.data] # type: ignore
-
+    return [x["embedding"] for x in embed_response.data]  # type: ignore
 
 
 # Initialize Firebase Admin
@@ -79,11 +74,21 @@ async def process(vid: str, uid: str):
     srt_file = file_name.with_suffix(".wav.word.srt")
     transcript: Transcript = transcript_from_srt(srt_file)
     sections = transcript.sections
-    sentences = chain.from_iterable([section.sentences for section in sections])
+    sentences = list(chain.from_iterable([section.sentences for section in sections]))
 
     section_embeddings = get_embeddings([section.content for section in sections])
     sentence_embeddings = get_embeddings([sentence.content for sentence in sentences])
-    
+    sentence_metadatas = [
+        {"uid": uid, "vid": vid, "type": "sentence"} for _ in range(len(sections))
+    ]
+
+    collection.add(
+        embeddings=section_embeddings,
+        documents=sentences,
+        metadatas=sentence_metadatas,
+        ids=["doc1", "doc2"],
+    )
+
     return "lgtm"
 
 
@@ -95,6 +100,7 @@ async def download_video(request: DownloadRequest):
         stream = yt.streams.filter(
             file_extension="mp4",
         ).get_highest_resolution()
+        assert stream is not None
 
         time, doc = db.collection("videos").add(
             {
