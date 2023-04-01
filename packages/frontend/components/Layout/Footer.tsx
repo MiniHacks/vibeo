@@ -1,4 +1,12 @@
-import { Box, Flex, HStack, Link, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  HStack,
+  Link,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import React from "react";
 
 const Footer = (): JSX.Element => {
@@ -7,22 +15,20 @@ const Footer = (): JSX.Element => {
       <Flex h={"160px"} bg={"black"} justifyContent={"center"}>
         <HStack justifyContent={"space-between"}>
           <VStack alignItems={"left"}>
-            <Text
+            <Heading
               lineHeight={"100%"}
               m={0}
               p={0}
               fontSize={"3xl"}
-              fontFamily={"Patrick Hand"}
               color={"white"}
             >
               vibeo
-            </Text>
+            </Heading>
             <Text
               letterSpacing={"0.05em"}
               lineHeight={"100%"}
               m={0}
               p={0}
-              fontFamily={"Poppins"}
               fontWeight={"semibold"}
               color={"white"}
             >
@@ -57,12 +63,7 @@ const Footer = (): JSX.Element => {
                 {" | "}
                 <Link href={"https://devpost.com/software/vibeo"}>devpost</Link>
               </Text>
-              <Text
-                fontWeight={"thin"}
-                fontSize={"xs"}
-                fontFamily={"Poppins"}
-                color={"white"}
-              >
+              <Text fontWeight={"thin"} fontSize={"xs"} color={"white"}>
                 made with vibes for hackprinceton 2023
               </Text>
             </Flex>
