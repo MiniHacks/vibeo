@@ -37,16 +37,15 @@ const Dashboard: NextPage = () => {
 
   // set up query
   const firestore = useFirestore();
-  const videosCollection = collection(firestore, "videos");
-  const uid: string = authUser?.uid ?? "samyok";
-  const videosQuery = query(
-    videosCollection,
-    where("uid", "==", uid),
-    orderBy("createdAt", "desc")
-  );
+  const videosCollection = collection(firestore, "videos/");
+  const uid: string = authUser?.uid ?? "sasha";
+  console.log("uid: ", uid);
+  const videosQuery = query(videosCollection, where("uid", "==", uid));
   const { status, data: videos } = useFirestoreCollectionData(videosQuery, {
     idField: "id", // this field will be added to the object created from each document
   });
+
+  console.log({ status, videos });
 
   if (loading) {
     return (

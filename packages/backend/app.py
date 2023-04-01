@@ -4,7 +4,7 @@ import os
 import threading
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from firebase_admin import firestore
 from pytube import YouTube
 import openai
@@ -93,9 +93,9 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
 
 
 @app.post("/download")
-async def download_video(request: DownloadRequest):
+async def download_video(request: DownloadRequest, response: Response):
     print(request.url, request.uid)
-    yield {"message": "Download started"}
+    response.body = {"message": "Download started"}
     try:
         yt = YouTube(request.url)
 
