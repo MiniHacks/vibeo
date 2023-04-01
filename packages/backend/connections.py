@@ -3,8 +3,11 @@ import os
 from firebase_admin import credentials, firestore, initialize_app
 from chromadb import Client as chroma_client
 from chromadb.config import Settings
+from dotenv import load_dotenv
 
-from backend.constants import FILE_DIR
+from backend.constants import FILE_DIR, ENV_PATH
+
+load_dotenv(dotenv_path=ENV_PATH)
 
 cred = credentials.Certificate(
     {

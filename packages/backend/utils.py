@@ -132,7 +132,7 @@ def get_embeddings(input: List[str]) -> List[List[float]]:
     return [x.embedding for x in embed_response.data]  # type: ignore
 
 
-def process(vid: str, uid: str, doc: DocumentReference):
+def process_video(vid: str, uid: str, doc: DocumentReference):
     logger.info(f"Processing video {vid} in collection {uid}")
 
     logger.info("Extracting audio")
@@ -153,12 +153,20 @@ def process(vid: str, uid: str, doc: DocumentReference):
 
     logger.info("Creating transcript object")
     srt_file = file_name.with_suffix(".word.srt")
-    transcript: Transcript = transcript_from_srt(srt_file)
+    with open(srt_file, "r") as f:
+        srt_content = f.read()
+    words = parse_srt_to_words(srt_content)
+    sentences = accumulate_words_to_sentences(words)
+    sections = accumulate_sentences_to_sections(sentences)
+    transcript = transcript_from_sections(sections)
     logger.info("Created transcript object")
     doc.update({"progress": random() * 0.1 + 0.8})
 
     logger.info("Upserting transcript to firestore")
     doc.update({"transcript": transcript.dict()})
+    doc.update({"words": [x.dict() for x in words]})
+    doc.update({"sentences": [x.dict() for x in sentences]})
+    doc.update({"sections": [x.dict() for x in sections]})
     logger.info("Upserted transcript to firestore")
     doc.update({"progress": 1})
 

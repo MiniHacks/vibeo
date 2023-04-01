@@ -12,7 +12,7 @@ import openai
 
 from backend.models import DownloadRequest
 from backend.stream import *
-from backend.utils import get_embedding, get_embeddings, process
+from backend.utils import get_embedding, get_embeddings, process_video
 from backend.constants import ENV_PATH, FILE_DIR
 from backend.connections import db, collection
 
@@ -83,7 +83,7 @@ async def download_video(request: DownloadRequest):
             # Do something with the downloaded video
             print("Download completed", file_path)
             doc.update({"progressMessage": "Processing", "progress": 0})
-            process(file_path, request.uid, doc)
+            process_video(file_path, request.uid, doc)
 
         yt.register_on_complete_callback(on_complete)
         yt.register_on_progress_callback(on_progress)
