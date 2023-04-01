@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+from typing import List
+
 
 class Word(BaseModel):
     start: float
@@ -9,12 +11,13 @@ class Word(BaseModel):
 class Sentence(BaseModel):
     start: float
     end: float
-    content: str
+    words: List[Word]
+
 
 class Section(BaseModel):
     start: float
     end: float
-    content: str
+    sentences = List[Sentence]
 
 
 class DownloadRequest(BaseModel):
