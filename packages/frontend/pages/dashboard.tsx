@@ -135,7 +135,7 @@ const Dashboard: NextPage = () => {
         </Wrap>
         <pre>{JSON.stringify(videos)}</pre>
       </Box>
-      <AddVideoModal open={isOpen} onClose={onClose} />
+      <AddVideoModal open={isOpen} onClose={onClose} uid={uid} />
     </PageLayout>
   );
 };
