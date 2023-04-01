@@ -94,6 +94,8 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
 
 @app.post("/download")
 async def download_video(request: DownloadRequest):
+    print(request.url, request.uid)
+    yield {"message": "Download started"}
     try:
         yt = YouTube(request.url)
 
@@ -138,7 +140,7 @@ async def download_video(request: DownloadRequest):
         yt.register_on_progress_callback(on_progress)
 
         threading.Thread(target=side_process).start()
-        return {"vid": vid, "success": True}
+        # return {"vid": vid, "success": True}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
