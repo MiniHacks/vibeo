@@ -2,16 +2,16 @@ import type { NextPage } from "next";
 import { Box, Flex, HStack, Spinner, Text } from "@chakra-ui/react";
 import React, { useRef, useState } from "react";
 import { useAuth } from "reactfire";
-import PageLayout from "../components/Layout/PageLayout";
-import useAuthUser from "../lib/hooks/useAuthUser";
-import Card from "../components/Card";
-import Button from "../components/Button";
-import VideoControls from "../components/videopage/VideoControls";
-import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
-import VideoPlayer from "../components/videopage/VideoPlayer";
-import CanvasToolbar from "../components/videopage/CanvasToolbar";
+import PageLayout from "../../components/Layout/PageLayout";
+import useAuthUser from "../../lib/hooks/useAuthUser";
+import Card from "../../components/Card";
+import Button from "../../components/Button";
+import VideoControls from "../../components/videopage/VideoControls";
+import { useSignInWithProvider } from "../../lib/hooks/useSignInWithProvider";
+import VideoPlayer from "../../components/videopage/VideoPlayer";
+import CanvasToolbar from "../../components/videopage/CanvasToolbar";
 
-const Video: NextPage = () => {
+const Vid: NextPage = () => {
   const { authUser, loading } = useAuthUser();
   // login with oauth
   const [signInWithProvider] = useSignInWithProvider();
@@ -125,4 +125,4 @@ const Video: NextPage = () => {
   );
 };
 
-export default Video;
+export default Vid;
