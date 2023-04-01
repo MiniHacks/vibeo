@@ -4,17 +4,18 @@ on:
     branches:
       - main
 jobs:
-  deploy:
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Start SSH agent
-        uses: webfactory/ssh-agent@v0.8.0
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: SSH into server
-        run: |
-          cd ~/vibeo/packages/frontend
-          git pull
-          yarn build
-          pm2 restart vibeo --update-env
+          host: vibeo.video
+          username: samyok
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/vibeo/packages/frontend
+            git pull
+            yarn build
+            pm2 restart vibeo --update-env
