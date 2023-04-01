@@ -20,6 +20,7 @@ import Button from "../components/Button";
 import SearchBar from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
+import Tooltip from "../components/Tooltip";
 
 const Dashboard: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -65,12 +66,17 @@ const Dashboard: NextPage = () => {
 
   const filterSearch = (query: string): void => {
     console.log("Searching for: ", query);
-    if (query.includes('?')) {
-      console.log("This is a context search query.")
+    if (query.includes("?")) {
+      console.log("This is a context search query.");
     } else {
-      console.log("This is a filter search query.")
+      console.log("This is a filter search query.");
     }
   };
+
+  // shows tooltip upon question search query
+
+  // shows relevant cards given a filter
+  const showCards = () => {};
 
   return (
     <PageLayout title={"dashboard | vibeo - your personal video repository"}>
