@@ -20,6 +20,10 @@ class Section(BaseModel):
     sentences = List[Sentence]
 
 
+class Transcript(BaseModel):
+    sections: List[Section]
+
+
 class DownloadRequest(BaseModel):
     url: str
     uid: str
