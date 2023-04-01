@@ -1,24 +1,23 @@
-from pathlib import Path
-import subprocess
-from typing import List, Union
-import os
-import threading
 from itertools import chain
-import logging
+from pathlib import Path
 from random import random
+from typing import List, Union
+import logging
+import os
+import subprocess
+import threading
 
+from chromadb import Client as chroma_client
+from chromadb.config import Settings
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from firebase_admin import credentials, firestore, initialize_app
-
 from google.cloud.firestore import DocumentReference
 from pytube import YouTube
 import openai
-from chromadb import Client as chroma_client
-from chromadb.config import Settings
 
-from backend.stream import *
 from backend.models import Transcript, DownloadRequest
+from backend.stream import *
 from backend.utils import (
     extract_wav_from_mp4,
     transcript_from_srt,
@@ -27,12 +26,11 @@ from backend.utils import (
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-# take environment variables from ../../.env.
 ENV_PATH = Path(__file__).parent.parent.parent.absolute().joinpath(".env")
 FILE_DIR = Path(__file__).parent.parent.parent.absolute().joinpath("videos")
 WHISPER__MODEL = "tiny.en"
 
-print("Loading environment variables from", ENV_PATH)
+logger.info(f"Loading environment variables from {ENV_PATH}")
 load_dotenv(dotenv_path=ENV_PATH)
 
 openai.api_key = os.environ["OPENAI_KEY"]
