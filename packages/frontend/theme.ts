@@ -8,18 +8,9 @@ export default extendTheme({
       body: {
         bg: "#FFC700",
       },
-      color: {
-        brand: {
-          100: "#FFC700",
-          200: "#FFC700",
-          300: "#FFC700",
-          400: "#FFC700",
-          500: "#FFC700",
-          600: "#FFC700",
-          700: "#FFC700",
-          800: "#FFC700",
-        },
-      },
     }),
-  }
+  },
+  color: {
+    brand: "#FFC700",
+  },
 });

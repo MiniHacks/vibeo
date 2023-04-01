@@ -27,19 +27,19 @@ const Footer = (): JSX.Element => {
               color={"white"}
             >
               by{" "}
-              <Text as={"span"} color={"red"}>
+              <Text as={"span"} color={"brand"}>
                 samyok
               </Text>
               ,{" "}
-              <Text as={"span"} color={"brand.100"}>
+              <Text as={"span"} color={"brand"}>
                 mini
               </Text>
               ,{" "}
-              <Text as={"span"} color={"brand.100"}>
+              <Text as={"span"} color={"brand"}>
                 sasha
               </Text>
               , and{" "}
-              <Text as={"span"} color={"brand.100"}>
+              <Text as={"span"} color={"brand"}>
                 jack
               </Text>
             </Text>
@@ -55,7 +55,7 @@ const Footer = (): JSX.Element => {
               <Text>
                 <Link href={"https://github.com/MiniHacks/vibeo"}>github</Link>
                 {" | "}
-                <Link href={"#"}>devpost</Link>
+                <Link href={"https://devpost.com/software/vibeo"}>devpost</Link>
               </Text>
               <Text
                 fontWeight={"thin"}
