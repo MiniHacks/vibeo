@@ -11,10 +11,9 @@ import {
   Divider,
   Flex,
   Text,
+  Collapse,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
-import Tooltip from "./Tooltip";
-import Button from "./Button";
 
 export type SearchResult = {
   vid: string;
@@ -133,14 +132,14 @@ export default function SearchBar({
             </InputRightElement>
           </InputGroup>
 
-          <Tooltip isOpen={showingSearchResponse}>
-          <Divider my={4} />
-          <Text fontWeight="semibold" fontSize={"xl"} mb={2}>
-            Quote from some video. Something something we are really cool
-            people.
-          </Text>
-          <Text fontSize={"xl"}>↪ [XX:XX] of Video Title</Text>
-          </Tooltip>
+          <Collapse in={showingSearchResponse} animateOpacity>
+            <Divider my={4} />
+            <Text fontWeight="semibold" fontSize={"xl"} mb={2}>
+              Quote from some video. Something something we are really cool
+              people.
+            </Text>
+            <Text fontSize={"xl"}>↪ [XX:XX] of Video Title</Text>
+          </Collapse>
           <Divider my={4} />
           {videos.map((video, i) => (
             <Flex key={i} my={2} >
