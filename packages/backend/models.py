@@ -28,10 +28,6 @@ class Section(BaseModel):
         return " ".join([sentence.content for sentence in self.sentences])
 
 
-class Transcript(BaseModel):
-    sections: List[Section]
-
-
 class DownloadRequest(BaseModel):
     url: str
     uid: str

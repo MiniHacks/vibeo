@@ -12,6 +12,8 @@ const RenderTitle = ({ title }: { title: string }): JSX.Element => {
           fontWeight={600}
           color={"gray.700"}
           m={0}
+          overflow={"hidden"}
+          textOverflow={"ellipsis"}
         >
           {word}
         </Text>
@@ -23,6 +25,8 @@ const RenderTitle = ({ title }: { title: string }): JSX.Element => {
         fontWeight={400}
         color={"gray.600"}
         display={"inline"}
+        overflow={"hidden"}
+        textOverflow={"ellipsis"}
         m={0}
       >
         {word}
@@ -30,7 +34,7 @@ const RenderTitle = ({ title }: { title: string }): JSX.Element => {
     );
   });
   return (
-    <Box mb={3} mx={2}>
+    <Box mb={3} mx={2} textOverflow={"ellipsis"} overflow={"hidden"}>
       {rendered}
     </Box>
   );
