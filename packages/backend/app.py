@@ -8,10 +8,18 @@ from firebase_admin import firestore
 from pytube import YouTube
 from starlette.responses import FileResponse
 from random import randint
+from sse_starlette.sse import EventSourceResponse
 
 from backend.connections import db
 from backend.constants import ENV_PATH, FILE_DIR
-from backend.models import DownloadRequest, UploadRequest, Selection, Context, Highlight
+from backend.models import (
+    DownloadRequest,
+    UploadRequest,
+    StreamRequest,
+    Selection,
+    Context,
+    Highlight,
+)
 from backend.stream import *
 from backend.utils import (
     process_video,
@@ -19,6 +27,7 @@ from backend.utils import (
     query_vector_db,
     make_thumbnail,
     answer,
+    stream_answer,
     get_sentence_and_section,
 )
 
@@ -81,6 +90,14 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
     )
 
 
+@app.post("/stream_answer")
+async def answer_stream(request: StreamRequest):
+    context = request.context
+    query = request.query
+
+    return EventSourceResponse(stream_answer(query, context))
+
+
 @app.get("/question")
 async def question(query: str, uid: str, vid: Union[str, None] = None):
     context = (
@@ -90,6 +107,7 @@ async def question(query: str, uid: str, vid: Union[str, None] = None):
     )
     response = answer(query, context)
     return {"answer": response, "content": context}
+
 
 @app.post("/upload")
 async def upload_video(request: UploadRequest, response: Response):
@@ -101,6 +119,7 @@ async def upload_video(request: UploadRequest, response: Response):
     with open(os.path.join(FILE_DIR, file_name), "wb") as f:
         f.write(request.file)
     return {"fileName": file_name}
+
 
 @app.post("/download")
 async def download_video(request: DownloadRequest, response: Response):
@@ -164,9 +183,7 @@ async def stream_video(request: Request, filename: str):
             [vid, time] = filename[:-4].split("_")
             make_thumbnail(vid, time)
 
-        headers = {
-            "Cache-Control": "public, max-age=31536000"
-        }
+        headers = {"Cache-Control": "public, max-age=31536000"}
         return FileResponse(os.path.join(FILE_DIR, filename), headers=headers)
 
     video_path = os.path.join(FILE_DIR, filename + ".mp4")

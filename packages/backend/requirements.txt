@@ -8,3 +8,5 @@ pytube
 python-dotenv
 chromadb
 openai[embeddings]
+sse-starlette
+asyncio
