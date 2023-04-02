@@ -156,7 +156,18 @@ const Dashboard: NextPage = () => {
             ? status
             : videos.map((video) => (
                 <WrapItem>
-                  <Card p={2} w={328}>
+                  <Button
+                    p={2}
+                    w={328}
+                    display={"block"}
+                    textAlign={"left"}
+                    bg={"white"}
+                    _hover={{ bg: "gray.100" }}
+                    _active={{ bg: "gray.200" }}
+                    onClick={() => {
+                      router.push(`/v/${video.id}`);
+                    }}
+                  >
                     <Image
                       src={"https://via.placeholder.com/640x360"}
                       alt={"placeholder"}
@@ -178,7 +189,7 @@ const Dashboard: NextPage = () => {
                       )}
                     </Text>
                     <RenderTitle title={video?.name ?? "Unnamed Video"} />
-                  </Card>
+                  </Button>
                 </WrapItem>
               ))}
         </Wrap>
