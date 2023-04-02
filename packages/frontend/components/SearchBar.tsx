@@ -14,25 +14,38 @@ import {
   Collapse,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
+import { DocumentData } from "firebase/firestore";
+import Tooltip from "./Tooltip";
+
+export type Context = {
+  text: string;
+  start: number;
+  end: number;
+};
 
 export type SearchResult = {
   vid: string;
-  timestamp: number;
+  context: Context;
+  highlight: Context;
 };
 
-export type SearchResponse = {
-  answer: string | null;
-  moments?: SearchResult[];
+export type QuestionResult = {
+  content: SearchResult[];
+  answer: any;
 };
 
 export type SearchBarProps = {
   onSearch: (query: string) => void;
-  searchResponse?: SearchResponse | null;
+  searchResults: SearchResult[] | null;
+  questionResult: QuestionResult | null;
+  videos: DocumentData;
 } & BoxProps;
 
 export default function SearchBar({
   onSearch,
-  searchResponse,
+  searchResults,
+  questionResult,
+  videos,
   ...props
 }: SearchBarProps): JSX.Element {
   const [searchText, setSearchText] = useState("");
@@ -43,8 +56,12 @@ export default function SearchBar({
     return onSearch(event.target.value);
   };
 
+  if (questionResult && questionResult.answer && !showingSearchResponse) {
+    setShowingSearchResponse(true);
+  }
+
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const videos = [
+  const defaultVideos = [
     {
       src: "https://via.placeholder.com/400x300",
       alt: "placeholder",
@@ -131,32 +148,37 @@ export default function SearchBar({
           <Collapse in={showingSearchResponse} animateOpacity>
             <Divider my={4} />
             <Text fontWeight={"semibold"} fontSize={"xl"} mb={2}>
-              Quote from some video. Something something we are really cool
-              people.
+              {questionResult?.answer?.message.content}
             </Text>
-            <Text fontSize={"xl"}>↪ [XX:XX] of Video Title</Text>
+            <Text fontSize={"xl"}>↪ [XX] of Video Title</Text>
           </Collapse>
-          <Divider my={4} />
-          {videos.map((video, i) => (
-            <Flex key={i} my={2}>
-              <Image
-                fill={"co"}
-                w={"20%"}
-                src={video.src}
-                alt={video.alt}
-                borderRadius={"md"}
-                objectFit={"cover"}
-              />
-              <Flex direction={"column"} ml={4}>
-                <Text fontWeight={"bold"} fontSize={"xl"}>
-                  {video.title}
-                </Text>
-                <Text fontWeight={"light"}>
-                  [{video.timestamp}] {video.context}
-                </Text>
+          {((searchResults != null && searchResults.length > 0) ||
+            (questionResult && questionResult?.content.length > 0)) && (
+            <Divider my={4} />
+          )}
+          {(searchResults || questionResult?.content)?.map((result, i) => {
+            const video = videos.find((ele) => ele.id === result.vid);
+
+            return (
+              <Flex key={i} my={2}>
+                <Image
+                  fill={"co"}
+                  w={"20%"}
+                  src={`https://backend.vibeo.video/video/${video.id}_0.png`}
+                  borderRadius={"md"}
+                  objectFit={"cover"}
+                />
+                <Flex direction={"column"} ml={4}>
+                  <Text fontWeight={"bold"} fontSize={"xl"}>
+                    {video.name}
+                  </Text>
+                  <Text fontWeight={"light"}>
+                    [{video.timestamp}] {video.context}
+                  </Text>
+                </Flex>
               </Flex>
-            </Flex>
-          ))}
+            );
+          })}
         </ModalContent>
       </Modal>
     </>

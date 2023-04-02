@@ -22,7 +22,10 @@ import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
 import Button from "../components/Button";
-import SearchBar, { SearchResponse } from "../components/SearchBar";
+import SearchBar, {
+  QuestionResult,
+  SearchResult,
+} from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
 import RenderTitle from "../components/RenderTitle";
@@ -50,7 +53,8 @@ const Dashboard: NextPage = () => {
     idField: "id", // this field will be added to the object created from each document
   });
 
-  const [searchResponse, setSearchResults] = useState<SearchResponse | null>(
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [questionResult, setQuestionResult] = useState<QuestionResult | null>(
     null
   );
   const [videoFilter, setVideoFilter] = useState<string[] | null>(null);
@@ -61,18 +65,19 @@ const Dashboard: NextPage = () => {
       uid: authUser?.uid.toString() || "jack",
       query: qry,
     };
-    if (!qry.includes("?")) {
+    setVideoFilter(null);
+    if (!qry.includes("?") && qry.length > 0) {
       const params = new URLSearchParams(data);
       const url = `https://backend.vibeo.video/search?${params.toString()}`;
       fetch(url)
         .then((response) => response.json())
-        .then((result: SearchResponse) => {
+        .then((result: SearchResult[]) => {
           console.log("search");
           console.log(result);
-          setVideoFilter(result?.moments?.map((ele) => ele.vid) || null);
+          setVideoFilter(result.map((ele) => ele.vid));
           setSearchResults(result);
         });
-    } else {
+    } else if (qry.length > 0) {
       const params = new URLSearchParams(data);
       const url = `https://backend.vibeo.video/question?${params.toString()}`;
       fetch(url, {
@@ -82,11 +87,11 @@ const Dashboard: NextPage = () => {
         },
       })
         .then((response) => response.json())
-        .then((result: SearchResponse) => {
-          console.log("question");
+        .then((result: QuestionResult) => {
+          console.log("search");
           console.log(result);
-          setVideoFilter(result?.moments?.map((ele) => ele.vid) || null);
-          setSearchResults(result);
+          setVideoFilter(result.content.map((ele) => ele.vid));
+          setQuestionResult(result);
         });
     }
   };
@@ -144,7 +149,9 @@ const Dashboard: NextPage = () => {
           </Button>
           <SearchBar
             onSearch={debouncedSearch}
-            searchResponse={searchResponse}
+            searchResults={questionResult == null ? searchResults : null}
+            questionResult={questionResult}
+            videos={videos}
             py={5}
             placeholder={
               "Where are Sasha and Samyok being insufferable people?"
