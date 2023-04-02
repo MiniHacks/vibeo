@@ -11,10 +11,19 @@ from fastapi.logger import logger
 from firebase_admin import firestore
 from pytube import YouTube
 from starlette.responses import FileResponse
+from random import randint
+from sse_starlette.sse import EventSourceResponse
 
 from backend.connections import db
 from backend.constants import ENV_PATH, FILE_DIR
-from backend.models import DownloadRequest, UploadRequest, Selection, Context, Highlight
+from backend.models import (
+    DownloadRequest,
+    UploadRequest,
+    StreamRequest,
+    Selection,
+    Context,
+    Highlight,
+)
 from backend.stream import *
 from backend.transcribe import tiny_transcribe, med_transcribe
 from backend.utils import (
@@ -23,6 +32,7 @@ from backend.utils import (
     query_vector_db,
     make_thumbnail,
     answer,
+    stream_answer,
     get_sentence_and_section,
 )
 
@@ -68,8 +78,12 @@ def get_relevant_content(query: str, uid: str, vid: Union[str, None] = None):
         hightlight = Highlight(
             text=sentence.content, start=sentence.start, end=sentence.end
         )
-        context = Context(text=context, start=section.sentences[start_context_sentence_index].start,
-                          end=section.sentences[end_context_sentence_index - 1].end)  # type: ignore
+
+        context = Context(
+            text=context,
+            start=section.sentences[start_context_sentence_index].start,
+            end=section.sentences[end_context_sentence_index - 1].end,
+        )  # type: ignore
 
         relevant_content.append(
             Selection(highlight=hightlight, context=context, vid=vid)
@@ -84,6 +98,14 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
         if vid is None
         else get_relevant_content(query, uid, vid)
     )
+
+
+@app.post("/stream_answer")
+async def answer_stream(request: StreamRequest):
+    context = request.context
+    query = request.query
+
+    return EventSourceResponse(stream_answer(query, context))
 
 
 @app.get("/question")
@@ -171,9 +193,7 @@ async def stream_video(request: Request, filename: str):
             [vid, time] = filename[:-4].split("_")
             make_thumbnail(vid, time)
 
-        headers = {
-            "Cache-Control": "public, max-age=31536000"
-        }
+        headers = {"Cache-Control": "public, max-age=31536000"}
         return FileResponse(os.path.join(FILE_DIR, filename), headers=headers)
 
     video_path = os.path.join(FILE_DIR, filename + ".mp4")
@@ -196,7 +216,12 @@ async def tiny(uid: str, partial: int):
     path = getFilePath(uid, partial)
     result = tiny_transcribe(path)
 
-    return {"time": time.time() - start_time, "path": getFilePath(uid, partial), "result": result}
+    return {
+        "time": time.time() - start_time,
+        "path": getFilePath(uid, partial),
+        "result": result,
+    }
+
 
 
 @app.get("/revise")
@@ -207,8 +232,10 @@ async def revise(uid: str, partial: int, num: int):
     # create a temp output file below using a python package
     file = tempfile.mktemp(suffix=".webm")
     # concatenate the last num partials using ffmpeg
-    files = [ffmpeg.input(getFilePath(uid, i)) for i in range(partial - num + 1, partial + 1)]
-    ffmpeg.concat(*files, v=0, a=1).output(file).run()
+    files = [
+        ffmpeg.input(getFilePath(uid, i)) for i in range(partial - num + 1, partial + 1)
+    ]
+
 
     result = med_transcribe(file)
     return {"time": time.time() - start_time, "result": result, "file": file}
