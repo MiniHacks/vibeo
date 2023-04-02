@@ -117,7 +117,11 @@ export function TranscriptItem({
   );
 }
 
-export default function RecordingTranscript(): JSX.Element {
+export default function RecordingTranscript({
+  vid,
+}: {
+  vid: string;
+}): JSX.Element {
   const [isConnected, setIsConnected] = useState(socket.connected);
 
   const [completeData, setCompleteData] = useState<TranscriptData[]>([]);
@@ -155,6 +159,11 @@ export default function RecordingTranscript(): JSX.Element {
       socket.off("complete_data");
     };
   }, [hasEnded]);
+
+  useEffect(() => {
+    if (!socket || !socket.connected) return;
+    socket.emit("uid", vid);
+  }, [socket, vid]);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   // const startRecording = () => {
@@ -205,7 +214,7 @@ export default function RecordingTranscript(): JSX.Element {
             id += 1;
             recordRTC.startRecording();
           });
-        }, 10000 / NUM);
+        }, 15000 / NUM);
       });
   };
 
@@ -263,7 +272,14 @@ export default function RecordingTranscript(): JSX.Element {
 
   return (
     <VStack spacing={2} width={"100%"}>
-      <HStack spacing={2} justifyContent={"center"} width={"100%"} mt={4}>
+      <HStack
+        spacing={2}
+        justifyContent={"center"}
+        width={"100%"}
+        mt={4}
+        height={"100%"}
+        overflowX={"auto"}
+      >
         <Button
           disabled={!isConnected}
           onClick={wavRecord}

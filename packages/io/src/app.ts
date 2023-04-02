@@ -63,7 +63,7 @@ io.on("connection", (socket) => {
     console.log("ping", data);
     socket.emit("pong", data);
   });
-  const audioPath = `${process.env.VIDEO_ROOT}/${uid}-`;
+  const audioPath = `${process.env.VIDEO_ROOT}/${socket.id}-`;
 
   socket.on("stream_audio", ({ blob, id }) => {
     console.log(id, blob);

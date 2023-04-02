@@ -231,7 +231,7 @@ const Vid: NextPage = () => {
   );
 
   const TRANSCRIPT = isRecording ? (
-    <RecordingTranscript />
+    <RecordingTranscript vid={vid} />
   ) : (
     <>
       <Text fontSize={"xl"} fontWeight={"bold"}>
