@@ -8,6 +8,7 @@ import {
   Modal,
   ModalOverlay,
   ModalContent,
+  Divider,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
 
@@ -53,19 +54,21 @@ export default function SearchBar({
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent backgroundColor={"transparent"} minW={"50%"}>
-          <InputGroup>
+        <ModalContent
+          bg={"white"}
+          p={4}
+          border={"3px solid black !important"}
+          boxShadow={"-5px 7px 0px black !important"}
+          borderRadius={"lg"}
+          minW={"50%"}
+        >
+          <InputGroup p={0}>
             <Input
-              bg={"white"}
               type={"text"}
-              border={"3px solid black !important"}
-              boxShadow={"-5px 7px 0px black !important"}
-              borderRadius={"lg"}
               onChange={handleChange}
               value={searchText}
-              p={4}
-              size={"xl"}
               fontSize={"xl"}
+              border={"none"}
               {...props}
             />
             <InputRightElement
@@ -78,6 +81,8 @@ export default function SearchBar({
               <Image alt={"magnifying glass search icon"} src={"search.svg"} />
             </InputRightElement>
           </InputGroup>
+          <Divider my={2} />
+          <div>Quote from some video lmao.</div>
         </ModalContent>
       </Modal>
     </>
