@@ -106,10 +106,6 @@ const Dashboard: NextPage = () => {
     );
   }
 
-  // shows tooltip upon question search query
-
-  // const showCards = () => {};
-
   return (
     <PageLayout title={"dashboard | vibeo - your personal video repository"}>
       <Box px={[5, 10]} py={10}>
