@@ -22,7 +22,7 @@ const VideoPlayer: ForwardRefRenderFunction<
   return (
     <Card w={width} bg={"black"} overflow={"hidden"} p={0} pos={"relative"}>
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <video ref={ref} style={{ width, height }} autoPlay>
+      <video ref={ref} style={{ width, height }} autoPlay={false}>
         <source src={sourceUrl} type={"video/mp4"} />
         Your browser does not support the video tag.
       </video>

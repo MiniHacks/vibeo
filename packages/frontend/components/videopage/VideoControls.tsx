@@ -78,11 +78,15 @@ const VideoControls = ({
 
     if (videoRef?.current) {
       videoRef.current.addEventListener("timeupdate", onUpdate);
+      videoRef.current.addEventListener("canplay", onUpdate);
       videoRef.current.addEventListener("ended", handleVideoEnd);
+      videoRef.current.addEventListener("durationchange", onUpdate);
     }
 
     return () => {
       if (videoRef?.current) {
+        videoRef.current.removeEventListener("canplay", onUpdate);
+        videoRef.current.removeEventListener("durationchange", onUpdate);
         videoRef.current.removeEventListener("timeupdate", onUpdate);
         videoRef.current.removeEventListener("ended", handleVideoEnd);
       }

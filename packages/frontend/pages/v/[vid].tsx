@@ -1,7 +1,9 @@
 import type { NextPage } from "next";
 import { Box, Flex, HStack, Spinner, Text } from "@chakra-ui/react";
 import React, { useRef, useState } from "react";
-import { useAuth } from "reactfire";
+import { useRouter } from "next/router";
+import { useAuth, useFirestore, useFirestoreDocData } from "reactfire";
+import { doc } from "firebase/firestore";
 import PageLayout from "../../components/Layout/PageLayout";
 import useAuthUser from "../../lib/hooks/useAuthUser";
 import Card from "../../components/Card";
@@ -27,6 +29,15 @@ const Vid: NextPage = () => {
   const [isRecording, setRecording] = useState(false);
   const [isAudioOnly, setAudioOnly] = useState(false);
 
+  const router = useRouter();
+  const vid = router.query.vid as string;
+
+  // get video from firebase
+  const firestore = useFirestore();
+  const videoDocRef = doc(firestore, "videos", vid ?? " ");
+  const { status, data: video } = useFirestoreDocData(videoDocRef, {
+    idField: "id",
+  });
   const share = () => {};
 
   const onSetColor = (c: string) => {
@@ -34,7 +45,7 @@ const Vid: NextPage = () => {
     setColor(c);
   };
 
-  if (loading) {
+  if (loading || status === "loading" || !vid) {
     return (
       <PageLayout title={"Video | vibeo - your personal video repository"}>
         <Box height={"100%"} px={[5, 10]} py={10}>
@@ -64,7 +75,9 @@ const Vid: NextPage = () => {
   }
 
   return (
-    <PageLayout title={"Video | vibeo - your personal video repository"}>
+    <PageLayout
+      title={`${video.name} | vibeo - your personal video repository`}
+    >
       <Box
         minH={"100vh"}
         px={10}
@@ -75,6 +88,7 @@ const Vid: NextPage = () => {
         <Flex mb={10}>
           <Box flexGrow={1}>
             <VideoControls
+              videoTitle={video.name}
               videoRef={videoRef}
               endRecording={() =>
                 console.log("Yoo use this to stop the recording")
@@ -91,6 +105,7 @@ const Vid: NextPage = () => {
             {!isAudioOnly && (
               <>
                 <VideoPlayer
+                  source={`https://backend.vibeo.video/video/${vid}`}
                   ref={videoRef}
                   color={color}
                   setUndoFunction={(func) => {
