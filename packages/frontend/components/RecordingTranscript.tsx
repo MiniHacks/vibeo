@@ -214,7 +214,7 @@ export default function RecordingTranscript({
             id += 1;
             recordRTC.startRecording();
           });
-        }, 15000 / NUM);
+        }, 10000 / NUM);
       });
   };
 
