@@ -71,13 +71,14 @@ def get_relevant_content(query: str, uid: str, vid: Union[str, None] = None):
             [
                 s.content
                 for s in section.sentences[
-                    start_context_sentence_index:end_context_sentence_index
-                ]
+                         start_context_sentence_index:end_context_sentence_index
+                         ]
             ]
         )
         hightlight = Highlight(
             text=sentence.content, start=sentence.start, end=sentence.end
         )
+
         context = Context(
             text=context,
             start=section.sentences[start_context_sentence_index].start,
@@ -222,6 +223,7 @@ async def tiny(uid: str, partial: int):
     }
 
 
+
 @app.get("/revise")
 async def revise(uid: str, partial: int, num: int):
     if partial < 4:
@@ -233,7 +235,7 @@ async def revise(uid: str, partial: int, num: int):
     files = [
         ffmpeg.input(getFilePath(uid, i)) for i in range(partial - num + 1, partial + 1)
     ]
-    ffmpeg.concat(*files, v=0, a=1).output(file).run()
+
 
     result = med_transcribe(file)
     return {"time": time.time() - start_time, "result": result, "file": file}
