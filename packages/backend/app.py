@@ -1,5 +1,5 @@
 import threading
-from typing import Union
+from typing import Union, List
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Response
@@ -10,9 +10,16 @@ from starlette.responses import FileResponse
 
 from backend.connections import db
 from backend.constants import ENV_PATH, FILE_DIR
-from backend.models import DownloadRequest
+from backend.models import DownloadRequest, Selection, Context, Highlight
 from backend.stream import *
-from backend.utils import process_video, get_file, query_vector_db, make_thumbnail
+from backend.utils import (
+    process_video,
+    get_transcript,
+    query_vector_db,
+    make_thumbnail,
+    answer,
+    get_sentence_and_section,
+)
 
 logger.setLevel("DEBUG")
 
@@ -27,31 +34,61 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/search")
-async def search(query: str, uid: str, vid: Union[str, None] = None):
-    sentence_ids = query_vector_db(query, where={"uid": uid, "type": "sentence"})
-    section_ids = query_vector_db(query, where={"uid": uid, "type": "section"})
+def get_relevant_content(query: str, uid: str, vid: Union[str, None] = None):
+    sentence_ids = (
+        query_vector_db(query, where={"uid": uid, "type": "sentence"})
+        if vid is None
+        else query_vector_db(query, where={"uid": uid, "type": "sentence", "vid": vid})
+    )
 
-    relevant_sentences = []
+    relevant_content: List[Selection] = []
     for id in sentence_ids:
         vid, _, index = id.split("_")
 
-        doc = get_file(vid)
-        sentence = doc["sentences"][int(index)]
-        relevant_sentences.append({"id": vid, "sentence": sentence})
+        doc = get_transcript(vid)
+        sentence, section = get_sentence_and_section(doc, int(index))
+        # get index of sentence in section
+        index = section.sentences.index(sentence)
 
-    relevant_sections = []
-    for id in section_ids:
-        vid, _, index = id.split("_")
+        start_context_sentence_index = max(0, int(index) - 1)
+        end_context_sentence_index = min(len(section.sentences), int(index) + 1)  # type: ignore
+        context = " ".join(
+            [
+                s.content
+                for s in section.sentences[
+                    start_context_sentence_index:end_context_sentence_index
+                ]
+            ]
+        )
+        hightlight = Highlight(
+            text=sentence.content, start=sentence.start, end=sentence.end
+        )
+        context = Context(text=context, start=section.sentences[start_context_sentence_index].start, end=section.sentences[end_context_sentence_index - 1].end)  # type: ignore
 
-        doc = get_file(vid)
-        section = doc["sections"][int(index)]
-        relevant_sections.append({"id": vid, "section": section})
+        relevant_content.append(
+            Selection(highlight=hightlight, context=context, vid=vid)
+        )
+    return relevant_content
 
-    return {
-        "sentences": relevant_sentences,
-        "sections": relevant_sections,
-    }
+
+@app.get("/search")
+async def search(query: str, uid: str, vid: Union[str, None] = None):
+    return (
+        get_relevant_content(query, uid)
+        if vid is None
+        else get_relevant_content(query, uid, vid)
+    )
+
+
+@app.get("/question")
+async def question(query: str, uid: str, vid: Union[str, None] = None):
+    context = (
+        get_relevant_content(query, uid)
+        if vid is None
+        else get_relevant_content(query, uid, vid)
+    )
+    response = answer(query, context)
+    return {"answer": response, "content": context}
 
 
 @app.post("/download")
