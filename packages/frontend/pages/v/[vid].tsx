@@ -55,6 +55,7 @@ const Vid: NextPage = () => {
       notes: arrayUnion({
         ...note,
         time: videoRef.current?.currentTime ?? 0,
+        timestamp: Date.now(),
         creator: {
           uid: authUser?.uid,
           name: authUser?.displayName,

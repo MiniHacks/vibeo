@@ -20,6 +20,7 @@ export type Note = {
   time: number;
   content: string;
   isImage: boolean;
+  timestamp?: number;
 };
 
 export type NotesProps = {
@@ -91,6 +92,52 @@ const dummyNotes: Note[] = [
   },
 ];
 
+const NoteSingle = ({
+  note,
+  handleNoteClick,
+}: {
+  note: Note;
+  handleNoteClick: (time: number) => void;
+}): JSX.Element => {
+  const { creator } = note;
+  return (
+    <Box
+      key={note.time}
+      display={"flex"}
+      alignItems={"center"}
+      mt={"10px"}
+      onClick={() => handleNoteClick(note.time)}
+      _hover={{ cursor: "pointer" }}
+      role={"group"}
+    >
+      <TimeTag time={note.time} />
+      <Box display={"flex"}>
+        {note.isImage ? (
+          <Image src={note.content} boxSize={"40px"} objectFit={"cover"} />
+        ) : (
+          <Text _hover={{ bgColor: "yellow" }}>{note.content}</Text>
+        )}
+      </Box>
+      <Box flexGrow={1} />
+      <Avatar
+        _groupHover={{
+          opacity: 0.9,
+          transitionDelay: "0s",
+          transitionDuration: "0.1s",
+        }}
+        opacity={0.1}
+        transitionDuration={"500ms"}
+        transitionDelay={"200ms"}
+        size={"sm"}
+        name={creator.name}
+        src={creator.avatar}
+        // mr={-2}
+        // ml={-5}
+      />
+    </Box>
+  );
+};
+
 const Notes = ({
   notes = dummyNotes,
   users = defaultUsers,
@@ -126,50 +173,11 @@ const Notes = ({
   return (
     <Box w={"100%"}>
       {notes
+        ?.sort((a, b) => ((a?.timestamp ?? 0) < (b.timestamp ?? 0) ? -1 : 1))
         ?.sort((a, b) => (a.time < b.time ? -1 : 1))
-        .map((note: Note) => {
-          const { creator } = note;
-          return (
-            <Box
-              key={note.time}
-              display={"flex"}
-              alignItems={"center"}
-              mt={"10px"}
-              onClick={() => handleNoteClick(note.time)}
-              _hover={{ cursor: "pointer" }}
-              role={"group"}
-            >
-              <TimeTag time={note.time} />
-              <Box display={"flex"}>
-                {note.isImage ? (
-                  <Image
-                    src={note.content}
-                    boxSize={"40px"}
-                    objectFit={"cover"}
-                  />
-                ) : (
-                  <Text _hover={{ bgColor: "yellow" }}>{note.content}</Text>
-                )}
-              </Box>
-              <Box flexGrow={1} />
-              <Avatar
-                _groupHover={{
-                  opacity: 0.9,
-                  transitionDelay: "0s",
-                  transitionDuration: "0.1s",
-                }}
-                opacity={0.1}
-                transitionDuration={"500ms"}
-                transitionDelay={"200ms"}
-                size={"sm"}
-                name={creator.name}
-                src={creator.avatar}
-                // mr={-2}
-                // ml={-5}
-              />
-            </Box>
-          );
-        })}
+        .map((note: Note) => (
+          <NoteSingle note={note} handleNoteClick={handleNoteClick} />
+        ))}
     </Box>
   );
 };
