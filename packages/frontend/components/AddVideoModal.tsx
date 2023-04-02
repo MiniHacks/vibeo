@@ -7,7 +7,7 @@ import {
   ModalOverlay,
   VStack,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Button from "./Button";
 import { CardProps } from "./Card";
 
@@ -21,6 +21,7 @@ const AddVideoModal = ({
   onClose: () => void;
 }): JSX.Element => {
   const [youtubeLink, setYoutubeLink] = useState("");
+  const inputFile = useRef<HTMLInputElement | null>(null);
 
   const handleYoutubeLinkChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -28,21 +29,47 @@ const AddVideoModal = ({
     setYoutubeLink(event.target.value);
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    console.log("before if");
+    if (selectedFile) {
+      console.log("after if");
+      const url = `https://backend.vibeo.video/upload`;
+      const formData = new FormData();
+      formData.append("uid", uid);
+      formData.append("file", selectedFile);
+      console.log(formData);
+      fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+      onClose();
+    }
+  };
+
   const uploadYoutube = () => {
-    const url = `https://backend.vibeo.video/download`;
-    const data = {
-      uid,
-      url: youtubeLink,
-    };
-    console.log(data);
-    fetch(url, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    onClose();
+    if (youtubeLink.length > 0) {
+      const url = `https://backend.vibeo.video/download`;
+      const data = {
+        uid,
+        url: youtubeLink,
+      };
+      console.log(data);
+      fetch(url, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      onClose();
+    } else {
+      openFilePicker();
+    }
+  };
+
+  const openFilePicker = () => {
+    inputFile.current?.click();
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -67,6 +94,13 @@ const AddVideoModal = ({
             value={youtubeLink}
             onChange={handleYoutubeLinkChange}
             onKeyDown={handleKeyDown}
+          />
+          <input
+            type={"file"}
+            id={"file"}
+            ref={inputFile}
+            style={{ display: "none" }}
+            onChange={handleFileChange}
           />
         </VStack>
       </ModalContent>
