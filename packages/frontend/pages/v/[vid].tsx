@@ -11,7 +11,7 @@ import {
   useDisclosure,
   Image,
 } from "@chakra-ui/react";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth, useFirestore, useFirestoreDocData } from "reactfire";
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
@@ -57,6 +57,13 @@ const Vid: NextPage = () => {
 
   const [shareQr, setShareQr] = useState("");
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = parseInt(params.get("t") || "0", 10);
+    if (videoRef?.current) {
+      videoRef.current.currentTime = t;
+    }
+  }, [videoRef.current]);
   const share = () => {
     QRCode.toDataURL(location.href)
       .then((url) => {
@@ -137,6 +144,8 @@ const Vid: NextPage = () => {
     );
   }
 
+  const HIDER = ["none", null, "block"];
+
   const NOTES = (
     <>
       <Text fontSize={"xl"} fontWeight={"bold"}>
@@ -181,7 +190,7 @@ const Vid: NextPage = () => {
               }
             />
           </Box>
-          <Button px={12} ml={6} onClick={share}>
+          <Button px={12} ml={6} onClick={share} display={HIDER}>
             <Text fontSize={"2xl"}>Share</Text>
           </Button>
         </Flex>
@@ -192,7 +201,7 @@ const Vid: NextPage = () => {
           alignItems={"stretch"}
           h={"97vh"}
         >
-          <Flex direction={"column"} justify={"start"}>
+          <Flex direction={"column"} justify={"start"} maxW={"100%"}>
             {!isAudioOnly && (
               <>
                 <VideoPlayer
@@ -223,7 +232,7 @@ const Vid: NextPage = () => {
               {NOTES}
             </Card>
           </Flex>
-          <Card flexGrow={1} px={8} py={4}>
+          <Card flexGrow={1} px={8} py={4} display={HIDER}>
             {TRANSCRIPT}
           </Card>
         </HStack>

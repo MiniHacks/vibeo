@@ -1,5 +1,10 @@
-import { Box } from "@chakra-ui/react";
-import { forwardRef, ForwardRefRenderFunction, useState } from "react";
+import { Box, useBreakpointValue } from "@chakra-ui/react";
+import {
+  forwardRef,
+  ForwardRefRenderFunction,
+  useEffect,
+  useState,
+} from "react";
 import dynamic from "next/dynamic";
 import Card from "../Card";
 
@@ -19,10 +24,13 @@ const VideoPlayer: ForwardRefRenderFunction<
 
   const [width, height] = ["825px", "450px"];
 
+  const cardWidth = useBreakpointValue({ base: "100%", lg: width });
+  const videoWidth = useBreakpointValue({ base: "100%", lg: width });
+
   return (
-    <Card w={width} bg={"black"} overflow={"hidden"} p={0} pos={"relative"}>
+    <Card w={cardWidth} bg={"black"} overflow={"hidden"} p={0} pos={"relative"}>
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <video ref={ref} style={{ width, height }} autoPlay={false}>
+      <video ref={ref} style={{ width: videoWidth, height }} autoPlay={false}>
         <source src={sourceUrl} type={"video/mp4"} />
         Your browser does not support the video tag.
       </video>

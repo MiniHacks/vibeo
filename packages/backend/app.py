@@ -93,6 +93,9 @@ async def question(query: str, uid: str, vid: Union[str, None] = None):
 
 @app.post("/upload")
 async def upload_video(request: UploadRequest, response: Response):
+    # This function header might not work with the file uploads.
+    # if it doesn't try this
+    # async def upload_video(uid: str, file: UploadFile = File(...), response: Response):
     print("Starting upload...", request.uid, len(request.file))
     file_name = request.uid + "_" + randint(0, 213999999) + "_" + request.file.filename
     with open(os.path.join(FILE_DIR, file_name), "wb") as f:
