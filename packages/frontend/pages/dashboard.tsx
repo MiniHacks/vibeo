@@ -147,7 +147,6 @@ const Dashboard: NextPage = () => {
           <SearchBar
             onSearch={debouncedSearch}
             searchResponse={searchResponse}
-            ml={2}
             py={5}
             placeholder={
               "Where are Sasha and Samyok being insufferable people?"

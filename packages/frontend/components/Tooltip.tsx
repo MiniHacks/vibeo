@@ -11,7 +11,7 @@ export default function Tooltip({
 }: TooltipProps): JSX.Element {
   return (
     <Collapse in={isOpen} animateOpacity>
-      <Box p={8} my={4} bg={"#F1AD0E"} rounded={"lg"}>
+      <Box>
         {children}
       </Box>
     </Collapse>
