@@ -175,6 +175,7 @@ const Dashboard: NextPage = () => {
                       onClick={() => {
                         router.push(`/v/${video.id}`);
                       }}
+                      height={"100%"}
                     >
                       <Image
                         src={`https://backend.vibeo.video/video/${video.id}_0.png`}

@@ -1,5 +1,5 @@
 import { Box, Text } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type TranscriptWord = {
   start: number;
@@ -114,6 +114,45 @@ const dummyData: VideoData = {
   uid: "user123",
 };
 
+const Word = ({
+  word,
+  currentTime,
+  setVideoTime,
+}: {
+  word: TranscriptWord;
+  currentTime: number;
+  setVideoTime: (time: number) => void;
+}): JSX.Element => {
+  const isCurrentWord =
+    currentTime && currentTime >= word.start - 0.2 && currentTime <= word.end;
+
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (isCurrentWord && ref.current) {
+      ref.current.parentElement.parentElement.parentElement.scroll({
+        top:
+          ref.current.parentElement.parentElement.offsetTop -
+          ref.current.parentElement.parentElement.parentElement.parentElement
+            .offsetTop,
+        behavior: "smooth",
+      });
+    }
+  }, [isCurrentWord]);
+
+  return (
+    <Text
+      ref={ref}
+      onClick={() => setVideoTime(word.start)}
+      as={"span"}
+      bgColor={isCurrentWord ? "yellow" : "transparent"}
+      _hover={{ bgColor: "yellow" }}
+    >
+      {word.content}{" "}
+    </Text>
+  );
+};
+
 const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
   const [currentTime, setCurrentTime] = useState(0);
 
@@ -171,23 +210,15 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
                 >
                   {formatTime(sentence.start)}
                 </Box>
-                <Box>
-                  {sentence.words.map((word: TranscriptWord, i: number) => {
-                    const isCurrentWord =
-                      currentTime &&
-                      currentTime >= word.start - 0.2 &&
-                      currentTime <= word.end;
-                    return (
-                      <Text
-                        onClick={() => setVideoTime(word.start)}
-                        as={"span"}
-                        bgColor={isCurrentWord ? "yellow" : "transparent"}
-                        _hover={{ bgColor: "yellow" }}
-                      >
-                        {word.content}{" "}
-                      </Text>
-                    );
-                  })}
+                <Box pos={"relative"}>
+                  {sentence.words.map((word: TranscriptWord) => (
+                    <Word
+                      key={word.start}
+                      word={word}
+                      currentTime={currentTime}
+                      setVideoTime={setVideoTime}
+                    />
+                  ))}
                 </Box>
               </Box>
             );
