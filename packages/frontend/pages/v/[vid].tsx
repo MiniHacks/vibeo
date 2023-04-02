@@ -15,6 +15,7 @@ import CanvasToolbar from "../../components/videopage/CanvasToolbar";
 import Transcript from "../../components/Transcript";
 import NewNote from "../../components/videopage/NewNote";
 import Notes from "../../components/videopage/Notes";
+import Footer from "../../components/Layout/Footer";
 
 const Vid: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -38,6 +39,7 @@ const Vid: NextPage = () => {
   const { status, data: video } = useFirestoreDocData(videoDocRef, {
     idField: "id",
   });
+  console.log(video);
   const share = () => {};
 
   const onSetColor = (c: string) => {
@@ -95,13 +97,13 @@ const Vid: NextPage = () => {
               }
             />
           </Box>
-          <Button px={12} ml={10} onClick={share}>
+          <Button px={12} ml={6} onClick={share}>
             <Text fontSize={"2xl"}>Share</Text>
           </Button>
         </Flex>
 
-        <Flex h={"90vh"} justify={"space-between"}>
-          <Flex w={"55vw"} direction={"column"} justify={"start"}>
+        <HStack justify={"space-between"} spacing={8} alignItems={"stretch"}>
+          <Flex direction={"column"} justify={"start"}>
             {!isAudioOnly && (
               <>
                 <VideoPlayer
@@ -136,7 +138,7 @@ const Vid: NextPage = () => {
             </Card>
           </Flex>
           <Card
-            w={"35vw"}
+            flexGrow={1}
             px={8}
             py={4}
             borderBottomLeftRadius={"0px"}
@@ -148,8 +150,9 @@ const Vid: NextPage = () => {
             </Text>
             <Transcript videoRef={videoRef} />
           </Card>
-        </Flex>
+        </HStack>
       </Box>
+      <Footer mt={10} />
     </PageLayout>
   );
 };

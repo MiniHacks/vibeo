@@ -119,9 +119,9 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
 
   useEffect(() => {
     const onUpdate = () => {
-      const { currentTime } = videoRef?.current || {};
-      if (currentTime) {
-        setCurrentTime(currentTime);
+      const { currentTime: ct } = videoRef?.current || {};
+      if (ct) {
+        setCurrentTime(ct);
       }
     };
 

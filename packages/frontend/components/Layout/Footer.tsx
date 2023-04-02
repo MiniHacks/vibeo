@@ -1,7 +1,7 @@
-import { Box, Flex, Heading, Link, Text } from "@chakra-ui/react";
+import { Box, Flex, FlexProps, Heading, Link, Text } from "@chakra-ui/react";
 import React from "react";
 
-const Footer = (): JSX.Element => {
+const Footer = (props: FlexProps): JSX.Element => {
   return (
     <Flex
       h={"400px"}
@@ -9,6 +9,7 @@ const Footer = (): JSX.Element => {
       direction={"column"}
       justifyContent={"center"}
       py={"8em"}
+      {...props}
     >
       <Box px={"4em"} my={"1.5em"}>
         <Heading
