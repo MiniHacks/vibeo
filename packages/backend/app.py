@@ -12,9 +12,9 @@ import openai
 
 from backend.models import DownloadRequest
 from backend.stream import *
-from backend.utils import get_embedding, process_video, get_file
+from backend.utils import get_embedding, process_video, get_file, query_vector_db
 from backend.constants import ENV_PATH, FILE_DIR
-from backend.connections import db, collection
+from backend.connections import db
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -36,28 +36,8 @@ async def root():
 
 @app.get("/search")
 async def search(query: str, uid: str, vid: Union[str, None] = None):
-    query_embedding = get_embedding(query)
-    try:
-        sentence_results = collection.query(
-            query_embeddings=query_embedding,
-            n_results=5,
-            where={"uid": uid, "type": "sentence"},
-        )
-        sentence_ids = sentence_results["ids"][0]
-    except Exception as e:
-        logger.error(e)
-        sentence_ids = []
-    try:
-        section_results = collection.query(
-            query_embeddings=query_embedding,
-            n_results=5,
-            where={"uid": uid, "type": "section"},
-        )
-        section_ids = section_results["ids"][0]
-    except Exception as e:
-        logger.error(e)
-        section_results = []
-        section_ids = []
+    sentence_ids = query_vector_db(query, where={"uid": uid, "type": "sentence"})
+    section_ids = query_vector_db(query, where={"uid": uid, "type": "section"})
 
     relevant_sentences = []
     for id in sentence_ids:

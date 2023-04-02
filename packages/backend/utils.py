@@ -1,11 +1,10 @@
-from typing import List
+from typing import List, Dict, Union
 import re
 from pathlib import Path
 from itertools import chain
 import subprocess
 import logging
 from random import random
-from functools import lru_cache
 
 from backend.models import Word, Sentence, Section, Transcript
 from backend.constants import FILE_DIR, WHISPER__MODEL
@@ -232,3 +231,29 @@ def get_file(vid, transcript_cache=transcript_cache):
     transcript_cache.set(vid, doc)
 
     return doc
+
+
+def query_vector_db(
+    query: str,
+    where: Union[Dict[str, str], None] = None,
+    count: int = 5,
+    collection=collection,
+):
+    query_embedding = get_embedding(query)
+
+    try:
+        if where:
+            results = collection.query(
+                query_embedding,
+                n_results=count,
+                where=where,  # type: ignore
+            )
+        else:
+            results = collection.query(
+                query_embedding,
+                n_results=count,
+            )
+        return results["ids"][0]
+    except Exception as e:
+        logger.error(f"Vector db query failed: {e}")
+        return []
