@@ -16,13 +16,13 @@ import {
 import React, { ChangeEvent, useState } from "react";
 
 export type SearchResult = {
-  vid: number;
+  vid: string;
   timestamp: number;
 };
 
 export type SearchResponse = {
   answer: string | null;
-  moments: SearchResult[];
+  moments?: SearchResult[];
 };
 
 export type SearchBarProps = {
@@ -42,6 +42,12 @@ export default function SearchBar({
   };
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const formatTime = (timeInSeconds: number): string => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes.toString()}:${seconds.toString().padStart(2, "0")}`;
+  };
 
   return (
     <>
