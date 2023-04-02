@@ -12,10 +12,11 @@ import {
   Wrap,
   WrapItem,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
 import { collection, query, where } from "firebase/firestore";
+import debounce from "lodash/debounce";
 import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
@@ -23,7 +24,6 @@ import Button from "../components/Button";
 import SearchBar from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
-import Tooltip from "../components/Tooltip";
 import RenderTitle from "../components/RenderTitle";
 
 const Dashboard: NextPage = () => {
@@ -49,8 +49,42 @@ const Dashboard: NextPage = () => {
     idField: "id", // this field will be added to the object created from each document
   });
 
-  const [showingSearchResponse, setShowingSearchResponse] = useState(true);
-  const [searchResponse, setSearchResponse] = useState("meow meow meow meow");
+  const [searchResponse, setSearchResults] = useState(null);
+
+  const filterSearch = (qry: string): void => {
+    console.log("Searching for: ", qry);
+    const data = {
+      uid,
+      query: qry,
+    };
+    if (!qry.includes("?")) {
+      const params = new URLSearchParams(data);
+      const url = `https://backend.vibeo.video/search?${params.toString()}`;
+      fetch(url)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log("search");
+          console.log(result);
+          setSearchResults(result);
+        });
+    } else {
+      const params = new URLSearchParams(data);
+      const url = `https://backend.vibeo.video/question?${params.toString()}`;
+      fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((result) => {
+          console.log("question");
+          console.log(result);
+          setSearchResults(result);
+        });
+    }
+  };
+  const debouncedSearch = useRef(debounce(filterSearch, 400)).current;
 
   console.log({ status, videos });
 
@@ -142,7 +176,8 @@ const Dashboard: NextPage = () => {
             Add Video
           </Button>
           <SearchBar
-            onSearch={filterSearch}
+            onSearch={debouncedSearch}
+            searchResponse={searchResponse}
             ml={2}
             py={5}
             placeholder={
@@ -150,7 +185,6 @@ const Dashboard: NextPage = () => {
             }
           />
         </HStack>
-        <Tooltip isOpen={showingSearchResponse}>{searchResponse}</Tooltip>
         <Wrap overflow={"unset"} spacing={6}>
           {videos == null
             ? status
