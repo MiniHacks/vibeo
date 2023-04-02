@@ -8,7 +8,6 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.logger import logger
 from firebase_admin import firestore
 from pytube import YouTube
-import openai
 
 from backend.models import DownloadRequest
 from backend.stream import *
@@ -20,8 +19,6 @@ logger.setLevel("DEBUG")
 
 logger.info(f"Loading environment variables from {ENV_PATH}")
 load_dotenv(dotenv_path=ENV_PATH)
-
-openai.api_key = os.environ["OPENAI_KEY"]
 
 
 app = FastAPI()
@@ -62,7 +59,7 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
 @app.post("/download")
 async def download_video(request: DownloadRequest, response: Response):
     print(request.url, request.uid)
-    response.body = {"message": "Download started"}
+    response.body = {"message": "Download started"}  # type: ignore
     try:
         yt = YouTube(request.url)
 
@@ -123,4 +120,3 @@ async def stream_video(request: Request, filename: str):
         )
     except Exception as e:
         return {"error": str(e)}
-
