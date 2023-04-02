@@ -2,6 +2,7 @@ import { Box, Text } from "@chakra-ui/react";
 import React from "react";
 
 const RenderTitle = ({ title }: { title: string }): JSX.Element => {
+  if (!title) return <span />;
   const splitters = /:|\||-/;
   const rendered = title.split(splitters).map((word, index) => {
     if (index < 1)
