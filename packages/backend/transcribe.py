@@ -212,6 +212,6 @@ def tiny_transcribe(path):
 
 
 def med_transcribe(path):
-    model = models["med.en"]
+    model = models["medium.en"]
     result = model.transcribe(path, language="en")
     return result
