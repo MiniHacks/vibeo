@@ -136,7 +136,8 @@ const Word = ({
         top:
           (current?.parentElement?.parentElement?.offsetTop ?? 0) -
           (current?.parentElement?.parentElement?.parentElement?.parentElement
-            ?.offsetTop ?? 0),
+            ?.offsetTop ?? 0) -
+          20,
         behavior: "smooth",
       });
     }
@@ -190,8 +191,8 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
   };
 
   return (
-    <Box w={"100%"}>
-      <Box mt={4} maxH={"90vh"} overflowX={"auto"}>
+    <Box w={"100%"} flexGrow={1} overflow={"hidden"} height={"100%"}>
+      <Box mt={4} overflowX={"auto"} maxH={"calc(100% - 10px)"} pb={24}>
         {videoData.transcript?.map((section: TranscriptSection) =>
           section.sentences.map((sentence: TranscriptSentence) => {
             return (

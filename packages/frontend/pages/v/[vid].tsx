@@ -94,12 +94,34 @@ const Vid: NextPage = () => {
     );
   }
 
+  const NOTES = (
+    <>
+      <Text fontSize={"xl"} fontWeight={"bold"}>
+        Notes
+      </Text>
+      <Notes videoRef={videoRef} notes={video.notes || []} />
+    </>
+  );
+
+  const TRANSCRIPT = (
+    <>
+      <Text fontSize={"xl"} fontWeight={"bold"}>
+        {video.done
+          ? "Transcript"
+          : `${video.processingMessage}...${
+              Math.round(video.progress * 1000) / 10
+            }%`}
+      </Text>
+      <Transcript videoRef={videoRef} videoData={video as VideoData} />
+    </>
+  );
+
   return (
     <PageLayout
       title={`${video.name} | vibeo - your personal video repository`}
     >
       <Box
-        minH={"100vh"}
+        minHeight={"100vh"}
         px={10}
         pt={10}
         display={"flex"}
@@ -121,7 +143,12 @@ const Vid: NextPage = () => {
           </Button>
         </Flex>
 
-        <HStack justify={"space-between"} spacing={8} alignItems={"stretch"}>
+        <HStack
+          justify={"space-between"}
+          spacing={8}
+          alignItems={"stretch"}
+          h={"97vh"}
+        >
           <Flex direction={"column"} justify={"start"}>
             {!isAudioOnly && (
               <>
@@ -146,33 +173,15 @@ const Vid: NextPage = () => {
               px={8}
               py={4}
               mt={!isAudioOnly ? 8 : 0}
-              borderBottomLeftRadius={"0px"}
-              borderBottomRightRadius={"0px"}
-              borderBottom={"0px"}
-              overflow={"unset"}
+              h={0}
+              display={"flex"}
+              flexDirection={"column"}
             >
-              <Text fontSize={"xl"} fontWeight={"bold"}>
-                Notes
-              </Text>
-              <Notes videoRef={videoRef} notes={video.notes || []} />
+              {NOTES}
             </Card>
           </Flex>
-          <Card
-            flexGrow={1}
-            px={8}
-            py={4}
-            borderBottomLeftRadius={"0px"}
-            borderBottomRightRadius={"0px"}
-            borderBottom={"0px"}
-          >
-            <Text fontSize={"xl"} fontWeight={"bold"}>
-              {video.done
-                ? "Transcript"
-                : `${video.processingMessage}...${
-                    Math.round(video.progress * 1000) / 10
-                  }%`}
-            </Text>
-            <Transcript videoRef={videoRef} videoData={video as VideoData} />
+          <Card flexGrow={1} px={8} py={4}>
+            {TRANSCRIPT}
           </Card>
         </HStack>
       </Box>
