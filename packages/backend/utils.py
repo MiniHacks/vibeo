@@ -6,8 +6,10 @@ from itertools import chain
 import subprocess
 from random import random
 
+from sqlalchemy import Select
+
 from fastapi.logger import logger
-from backend.models import Word, Sentence, Section
+from backend.models import Word, Sentence, Section, Selection
 from backend.constants import FILE_DIR
 from backend.connections import collection, db
 from backend.transcribe import transcribe_video
@@ -50,6 +52,16 @@ def parse_srt_to_words(srt_content: str) -> List[Word]:
     return words
 
 
+def get_sentence_and_section(doc: List[Section], index: int):
+    count = 0
+    for section in doc:
+        for sentence in section.sentences:
+            if count == index:
+                return sentence, section
+            count += 1
+    return doc[0].sentences[0], doc[0]
+
+
 def accumulate_words_to_sentences(
     words: List[Word], end_chars: str = ".!?"
 ) -> List[Sentence]:
@@ -58,7 +70,12 @@ def accumulate_words_to_sentences(
 
     for word in words:
         sentence_words.append(word)
-        if word.content[-1] in end_chars:
+        if word.content[-1] in end_chars and word.content not in [
+            "Mr.",
+            "Mrs.",
+            "Dr.",
+            "Ms.",
+        ]:
             sentence = Sentence(
                 start=sentence_words[0].start,
                 end=sentence_words[-1].end,
@@ -166,12 +183,7 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     doc.update(
         {"transcript": [x.dict() for x in sections], "progress": 1, "done": True, "notes": []}
     )
-    full_doc = {
-        "words": [x.dict() for x in words],
-        "sentences": [x.dict() for x in sentences],
-        "sections": [x.dict() for x in sections],
-    }
-    transcript_cache.set(vid, full_doc)
+    transcript_cache.set(vid, sections)
     logger.info("Upserted transcript to firestore")
 
     logger.info("Generating vectors")
@@ -210,7 +222,7 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     return "lgtm"
 
 
-def get_file(vid, transcript_cache=transcript_cache):
+def get_transcript(vid, transcript_cache=transcript_cache) -> List[Section]:
     # Check if the file is already in the local cache
     doc = transcript_cache.get(vid)
     if doc is not None:
@@ -218,7 +230,9 @@ def get_file(vid, transcript_cache=transcript_cache):
     logger.warning(f"File {vid} not in cache, fetching from firestore")
 
     doc_ref = db.collection("videos").document(vid)
-    doc = doc_ref.get().to_dict()
+    doc = doc_ref.get().to_dict()["transcript"]
+    # parse into list of Section objects
+    doc = [Section(**x) for x in doc]
 
     # Update the local cache with the fetched file
     transcript_cache.set(vid, doc)
@@ -257,3 +271,29 @@ def make_thumbnail(vid: str, time: str):
     cmd = f"ffmpeg -ss {time} -i {FILE_DIR}/{vid}.mp4 -vframes 1 -vf scale=320:180 {FILE_DIR}/{vid}_{time}.png"
     result = subprocess.run(cmd, shell=True)
     return result
+
+
+def answer(query, context: List[Selection]):
+    system_prompt = """You are an expert assistant.
+Your job is to synthesize relevant context from videos to answer a question.
+Your input will be in the following format:
+
+Question: <question>
+
+[1]: <context>
+[2]: <context>
+...
+
+Write a response factoring in all context that you deem relevant, including citations in the form of [1], [2], etc.
+"""
+    context_str = "\n".join(
+        [f"[{i}]: {x.context.text}" for i, x in enumerate(context, 1)]
+    )
+    prompt = f"Question: {query}\n\n{context_str}"
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt},
+    ]
+    print(prompt)
+    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
+    return completion.choices[0]  # type: ignore

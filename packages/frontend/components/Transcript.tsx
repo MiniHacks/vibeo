@@ -1,5 +1,6 @@
 import { Box, Text } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { TimeTag } from "./videopage/Notes";
 
 export type TranscriptWord = {
   start: number;
@@ -130,11 +131,12 @@ const Word = ({
 
   useEffect(() => {
     if (isCurrentWord && ref.current) {
-      ref.current.parentElement.parentElement.parentElement.scroll({
+      const current = ref.current as HTMLSpanElement;
+      current?.parentElement?.parentElement?.parentElement?.scroll({
         top:
-          ref.current.parentElement.parentElement.offsetTop -
-          ref.current.parentElement.parentElement.parentElement.parentElement
-            .offsetTop,
+          (current?.parentElement?.parentElement?.offsetTop ?? 0) -
+          (current?.parentElement?.parentElement?.parentElement?.parentElement
+            ?.offsetTop ?? 0),
         behavior: "smooth",
       });
     }
@@ -200,16 +202,8 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
                 // onClick={() => handleSentenceClick(sentence.start)}
                 _hover={{ cursor: "pointer" }}
               >
-                <Box
-                  bg={"gray.200"}
-                  py={1}
-                  px={2}
-                  borderRadius={"20px"}
-                  textAlign={"center"}
-                  mr={2}
-                >
-                  {formatTime(sentence.start)}
-                </Box>
+                <TimeTag time={sentence.start} />
+
                 <Box pos={"relative"}>
                   {sentence.words.map((word: TranscriptWord) => (
                     <Word

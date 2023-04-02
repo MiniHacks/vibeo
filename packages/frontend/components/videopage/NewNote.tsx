@@ -1,9 +1,10 @@
 import { Box, Text, Input } from "@chakra-ui/react";
 import { useState } from "react";
 import Card from "../Card";
+import { Note } from "./Notes";
 
 export type NewNoteProps = {
-  addNote: (note: string, time: Date) => void;
+  addNote: (note: Partial<Note>) => void;
 };
 
 const NewNote = ({ addNote }: NewNoteProps) => {
@@ -16,7 +17,9 @@ const NewNote = ({ addNote }: NewNoteProps) => {
   const handleAddNote = () => {
     if (note === "") return;
 
-    addNote(note, new Date());
+    addNote({
+      content: note,
+    });
     setNote("");
   };
 
@@ -27,9 +30,11 @@ const NewNote = ({ addNote }: NewNoteProps) => {
   };
 
   return (
-    <Card flexGrow={1}>
+    <Card flexGrow={1} p={0}>
       <Input
-        size={"xs"}
+        size={"md"}
+        height={"100%"}
+        placeholder={"Add a note"}
         value={note}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

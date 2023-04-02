@@ -14,8 +14,9 @@ import {
 import React, { useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth, useFirestore, useFirestoreDocData } from "reactfire";
-import { doc } from "firebase/firestore";
+import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 import QRCode from "qrcode";
+import { update } from "@firebase/database";
 import PageLayout from "../../components/Layout/PageLayout";
 import useAuthUser from "../../lib/hooks/useAuthUser";
 import Card from "../../components/Card";
@@ -26,7 +27,7 @@ import VideoPlayer from "../../components/videopage/VideoPlayer";
 import CanvasToolbar from "../../components/videopage/CanvasToolbar";
 import Transcript, { VideoData } from "../../components/Transcript";
 import NewNote from "../../components/videopage/NewNote";
-import Notes from "../../components/videopage/Notes";
+import Notes, { Note } from "../../components/videopage/Notes";
 import Footer from "../../components/Layout/Footer";
 
 const Vid: NextPage = () => {
@@ -70,6 +71,22 @@ const Vid: NextPage = () => {
   const onSetColor = (c: string) => {
     console.log(c);
     setColor(c);
+  };
+
+  const onAddNote = (note: Partial<Note>) => {
+    console.log(note);
+    updateDoc(videoDocRef, {
+      notes: arrayUnion({
+        ...note,
+        time: videoRef.current?.currentTime ?? 0,
+        timestamp: Date.now(),
+        creator: {
+          uid: authUser?.uid,
+          name: authUser?.displayName,
+          avatar: authUser?.photoURL,
+        },
+      }),
+    }).then(() => console.log("updated notes"));
   };
 
   if (loading || status === "loading" || !vid) {
@@ -141,7 +158,7 @@ const Vid: NextPage = () => {
                   }}
                 />
                 <Flex direction={"row"} justify={"space-between"} mt={4}>
-                  <NewNote addNote={() => console.log("note added")} />
+                  <NewNote addNote={onAddNote} />
                   <Flex direction={"column"} justify={"center"} ml={5}>
                     <CanvasToolbar onSetColor={onSetColor} />
                   </Flex>
@@ -156,11 +173,12 @@ const Vid: NextPage = () => {
               borderBottomLeftRadius={"0px"}
               borderBottomRightRadius={"0px"}
               borderBottom={"0px"}
+              overflow={"unset"}
             >
               <Text fontSize={"xl"} fontWeight={"bold"}>
                 Notes
               </Text>
-              <Notes videoRef={videoRef} />
+              <Notes videoRef={videoRef} notes={video.notes || []} />
             </Card>
           </Flex>
           <Card
