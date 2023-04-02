@@ -12,6 +12,7 @@ from firebase_admin import firestore
 from pytube import YouTube
 from sse_starlette.sse import EventSourceResponse
 from starlette.responses import FileResponse
+from pathlib import Path
 
 from backend.connections import db
 from backend.constants import ENV_PATH, FILE_DIR
@@ -70,8 +71,8 @@ def get_relevant_content(query: str, uid: str, vid: Union[str, None] = None):
             [
                 s.content
                 for s in section.sentences[
-                         start_context_sentence_index:end_context_sentence_index
-                         ]
+                    start_context_sentence_index:end_context_sentence_index
+                ]
             ]
         )
         hightlight = Highlight(
@@ -118,15 +119,34 @@ async def question(query: str, uid: str, vid: Union[str, None] = None):
     return {"answer": response, "content": context}
 
 
+from fastapi import File, UploadFile, Form, Request
+
+
 @app.post("/upload")
-async def upload_video(request: UploadRequest, response: Response):
-    # This function header might not work with the file uploads.
-    # if it doesn't try this
-    # async def upload_video(uid: str, file: UploadFile = File(...), response: Response):
-    print("Starting upload...", request.uid, len(request.file))
-    file_name = request.uid + "_" + randint(0, 213999999) + "_" + request.file.filename
-    with open(os.path.join(FILE_DIR, file_name), "wb") as f:
-        f.write(request.file)
+async def upload_video(uid: str, file: UploadFile = File(...)):
+    time, doc = db.collection("videos").add(
+        {
+            "name": "Uploaded Video",
+            "type": "uploaded",
+            "done": False,
+            "progressMessage": "Downloading",
+            "progress": 0,
+            "uid": uid,
+            "created": firestore.SERVER_TIMESTAMP,  # type: ignore
+        }
+    )
+
+    vid = doc.id
+
+    file_name = f"{vid}.mp4"
+    file_path = os.path.join(FILE_DIR, file_name)
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+        # f.write(request.file)
+
+    # TODO: maybe file_name -> file_path?
+    process_video(file_name, uid, doc)
+
     return {"fileName": file_name}
 
 
@@ -230,7 +250,9 @@ async def revise(uid: str, partial: int, num: int):
     # create a temp output file below using a python package
     file = tempfile.mktemp(suffix=".webm")
     # concatenate the last num partials using ffmpeg
-    files = [ffmpeg.input(getFilePath(uid, i)) for i in range(partial - num + 1, partial + 1)]
+    files = [
+        ffmpeg.input(getFilePath(uid, i)) for i in range(partial - num + 1, partial + 1)
+    ]
     ffmpeg.concat(*files, v=0, a=1).output(file).run()
 
     result = med_transcribe(file)
