@@ -12,6 +12,7 @@ import {
   Wrap,
   WrapItem,
   Flex,
+  VStack,
 } from "@chakra-ui/react";
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
@@ -138,9 +139,10 @@ const Dashboard: NextPage = () => {
     <PageLayout title={"dashboard | vibeo - your personal video repository"}>
       <Box px={[5, 10]} py={10}>
         <HStack spacing={5}>
-          <Heading flexGrow={1} size={"3xl"}>
-            vibeo
-          </Heading>
+          <VStack flexGrow={1} alignItems={"start"}>
+            <Heading size={"3xl"}>vibeo</Heading>
+            {/* <Text>find your vibe</Text> */}
+          </VStack>
           <Card>Logged in as {authUser.displayName || authUser.email}</Card>
           <Button colorScheme={"orange"} onClick={signOut}>
             Logout
@@ -180,16 +182,18 @@ const Dashboard: NextPage = () => {
                       _hover={{ bg: "gray.100" }}
                       _active={{ bg: "gray.200" }}
                       onClick={() => {
-                        router.push(`/v/${video.id}`);
+                        router.push(`/v/${video?.id}`);
                       }}
                       height={"100%"}
                     >
-                      <Image
-                        src={`https://backend.vibeo.video/video/${video.id}_0.png`}
-                        alt={"placeholder"}
-                        width={"100%"}
-                        borderRadius={"md"}
-                      />
+                      {video?.done && (
+                        <Image
+                          src={`https://backend.vibeo.video/video/${video?.id}_5.png`}
+                          alt={"placeholder"}
+                          width={"100%"}
+                          borderRadius={"md"}
+                        />
+                      )}
 
                       <Text
                         fontSize={"xs"}
@@ -200,7 +204,7 @@ const Dashboard: NextPage = () => {
                         color={"gray.500"}
                       >
                         {formatRelative(
-                          new Date(video.created.seconds * 1000),
+                          new Date(video?.created.seconds * 1000),
                           new Date()
                         )}
                       </Text>
@@ -217,9 +221,7 @@ const Dashboard: NextPage = () => {
                           fontWeight={300}
                           fontSize={"xs"}
                         >
-                          {video?.progressMessage != null &&
-                            video!.progress != 1 &&
-                            video?.progressMessage.toLowerCase()}
+                          {!video?.done && video?.progressMessage.toLowerCase()}
                         </Text>
                       </Flex>
                       <Box
@@ -236,8 +238,8 @@ const Dashboard: NextPage = () => {
                           bg={
                             video?.progressMessage != null &&
                             video!.progress != 1
-                              ? "#C4C4C4"
-                              : "#transparent"
+                              ? "#000000"
+                              : "transparent"
                           }
                           h={"100%"}
                           w={`${video.progress * 100}%`}

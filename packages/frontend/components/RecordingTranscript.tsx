@@ -244,6 +244,7 @@ export default function RecordingTranscript({
     // });
     //
     window.location.href = "/dashboard";
+    router.push("/dashboard");
   };
 
   const complete = completeData.filter(
