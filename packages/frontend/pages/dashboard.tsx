@@ -11,6 +11,7 @@ import {
   useDisclosure,
   Wrap,
   WrapItem,
+  Flex,
 } from "@chakra-ui/react";
 import React, { useRef, useState } from "react";
 import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
@@ -196,7 +197,37 @@ const Dashboard: NextPage = () => {
                           new Date()
                         )}
                       </Text>
-                      <RenderTitle title={video?.name ?? "Unnamed Video"} />
+                      <Flex
+                        justifyContent={"space-between"}
+                        direction={"row"}
+                        alignItems={"flex-end"}
+                      >
+                        <RenderTitle title={video?.name ?? "Unnamed Video"} />
+                        <Text
+                          color={"gray.500"}
+                          mx={2}
+                          mb={3}
+                          fontWeight={300}
+                          fontSize={"xs"}
+                        >
+                          {video?.progressMessage != null &&
+                            video?.progressMessage.toLowerCase()}
+                        </Text>
+                      </Flex>
+                      {video?.progressMessage != null && (
+                        <Box
+                          bg={"#C4C4C4"}
+                          h={"2px"}
+                          w={"100%"}
+                          borderRadius={"2px"}
+                        >
+                          <Box
+                            bg={"#000000"}
+                            h={"100%"}
+                            w={`${video.progress * 100}%`}
+                          />
+                        </Box>
+                      )}
                     </Button>
                   </WrapItem>
                 ))}
