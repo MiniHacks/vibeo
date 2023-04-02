@@ -12,7 +12,7 @@ import VideoControls from "../../components/videopage/VideoControls";
 import { useSignInWithProvider } from "../../lib/hooks/useSignInWithProvider";
 import VideoPlayer from "../../components/videopage/VideoPlayer";
 import CanvasToolbar from "../../components/videopage/CanvasToolbar";
-import Transcript from "../../components/Transcript";
+import Transcript, { VideoData } from "../../components/Transcript";
 import NewNote from "../../components/videopage/NewNote";
 import Notes from "../../components/videopage/Notes";
 import Footer from "../../components/Layout/Footer";
@@ -149,7 +149,7 @@ const Vid: NextPage = () => {
             <Text fontSize={"xl"} fontWeight={"bold"}>
               Transcript
             </Text>
-            <Transcript videoRef={videoRef} />
+            <Transcript videoRef={videoRef} videoData={video as VideoData} />
           </Card>
         </HStack>
       </Box>

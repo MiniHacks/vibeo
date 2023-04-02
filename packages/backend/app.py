@@ -113,7 +113,7 @@ async def download_video(request: DownloadRequest, response: Response):
 async def stream_video(request: Request, filename: str):
     if ".png" in filename:
         if filename not in os.listdir(FILE_DIR):
-            [vid, time] = filename.split(".")[0].split("_")
+            [vid, time] = filename[:-4].split("_")
             make_thumbnail(vid, time)
 
         return FileResponse(os.path.join(FILE_DIR, filename))
