@@ -15,7 +15,6 @@ import {
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
 import { DocumentData } from "firebase/firestore";
-import Tooltip from "./Tooltip";
 
 export type Context = {
   text: string;
@@ -61,34 +60,17 @@ export default function SearchBar({
   }
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const defaultVideos = [
-    {
-      src: "https://via.placeholder.com/400x300",
-      alt: "placeholder",
-      title: "llm time",
-      timestamp: "XX:XX",
-      context: "sasha makes a friend",
-    },
-    {
-      src: "https://via.placeholder.com/400x300",
-      alt: "placeholder",
-      title: "jack debut episode",
-      timestamp: "XX:XX",
-      context: "there's a hottub",
-    },
-    {
-      src: "https://via.placeholder.com/400x300",
-      alt: "placeholder",
-      title: "cookie mukbang",
-      timestamp: "XX:XX",
-      context: "samyok ate my cookie",
-    },
-  ];
 
-  const formatTime = (timeInSeconds: number): string => {
+  const formatTime = (timeInSeconds: number, id: number): JSX.Element => {
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = Math.floor(timeInSeconds % 60);
-    return `${minutes.toString()}:${seconds.toString().padStart(2, "0")}`;
+    const reference = `./v/${id}`;
+    // reference += `&t=${minutes}m${seconds}s` // TODO: implement
+    return (
+      <a href={reference}>
+        {minutes.toString()}:{seconds.toString().padStart(2, "0")}
+      </a>
+    );
   };
 
   const highlightText = (text: string, highlight: string) => {
@@ -121,9 +103,22 @@ export default function SearchBar({
         i += 1;
       }
     }
-
     return result;
   };
+
+  // 1.
+  // const formatTags = (msg: string): string => {
+  //   if (msg) {
+  //     const tags = msg.match(/\[\d+\]/g);
+  //     console.log("----------------------");
+  //     console.log(tags);
+
+  //     tags?.map((tag: string) => {
+  //       <a href={"#"}>{tag}</a>;
+  //     });
+  //   }
+  //   return "test";
+  // };
 
   return (
     <>
@@ -181,8 +176,8 @@ export default function SearchBar({
 
           <Collapse in={showingSearchResponse} animateOpacity>
             <Divider my={4} />
-            <Text fontWeight={"semibold"} fontSize={"xl"} mb={2}>
-              {questionResult?.answer?.message.content}
+            <Text fontWeight={"medium"} fontSize={"xl"} mb={2}>
+              {formatTags(questionResult?.answer?.message.content)}
             </Text>
           </Collapse>
           {((searchResults != null && searchResults.length > 0) ||
@@ -196,18 +191,18 @@ export default function SearchBar({
               <Flex key={i} my={2}>
                 <Image
                   fill={"cover"}
-                  w={'128px'}
-                  h={'72px'}
+                  w={"128px"}
+                  h={"72px"}
                   src={`https://backend.vibeo.video/video/${video.id}_0.png`}
                   borderRadius={"md"}
                   objectFit={"cover"}
                 />
                 <Flex direction={"column"} ml={4}>
                   <Text fontWeight={"bold"} fontSize={"xl"}>
-                    {video.name}
+                    {i + 1}. {video.name}
                   </Text>
                   <Text>
-                    [{formatTime(result.context.start)}]{" "}
+                    [{formatTime(result.context.start, video.id)}]{" "}
                     {highlightText(result.context.text, result.highlight.text)}
                   </Text>
                 </Flex>
