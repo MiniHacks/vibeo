@@ -6,6 +6,7 @@ import {
   BoxProps,
   useDisclosure,
   Modal,
+  Center,
   ModalOverlay,
   ModalContent,
   Divider,
@@ -14,10 +15,12 @@ import {
   Collapse,
   Tag,
   Badge,
+  Spinner,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
 import { DocumentData } from "firebase/firestore";
 import { useRouter } from "next/router";
+import RenderTitle from "./RenderTitle";
 
 export type Context = {
   text: string;
@@ -56,6 +59,7 @@ export default function SearchBar({
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value);
+    setShowingSearchResponse(event.target.value.endsWith("?"));
     return onSearch(event.target.value);
   };
 
@@ -97,7 +101,7 @@ export default function SearchBar({
 
       if (match) {
         result.push(
-          <Text as={"span"} fontWeight={"bold"}>
+          <Text as={"span"} fontWeight={600}>
             {text.slice(i, i + highlight.length)}
           </Text>
         );
@@ -125,22 +129,28 @@ export default function SearchBar({
   // };
 
   const formatTags = (msg: string): any[] => {
-    if (!msg || !searchResults) return [];
+    console.log("searchResults", searchResults, msg);
+    if (!msg) return [];
+    if (!searchResults) searchResults = questionResult?.content;
     const acc = [];
+    console.log("msg", msg);
     for (let i = 0; i < msg.length; i++) {
       if (msg[i] === "[") {
         const tag = msg.slice(i, msg.indexOf("]", i) + 1);
-        console.log(tag);
         const tagNum = tag.slice(1, tag.length - 1);
+        console.log("stupid", videos, searchResults, tagNum);
         const video = videos.find(
-          (video) => video.id === searchResults[+tagNum - 1].vid
+          (v) => v.id === searchResults[+tagNum - 1].vid
         );
-        const time = video?.data().time;
+        // const time = video?.data().time;
+        const time = searchResults[+tagNum - 1].context.start;
         const id = video?.id;
-        const link = `/v/${id}?t=${+time}`;
+        const link = `/v/${id}?t=${time}`;
         const tagLink = (
           <Tag
             colorScheme={"blue"}
+            fontSize={"10px"}
+            size={"xs"}
             p={1}
             mb={-2}
             display={"inline-block"}
@@ -221,7 +231,12 @@ export default function SearchBar({
 
           <Collapse in={showingSearchResponse} animateOpacity>
             <Divider my={4} />
-            <Text fontWeight={400} fontSize={"md"} mb={2}>
+            {!questionResult?.answer?.message?.content && (
+              <Center>
+                <Spinner mt={2} />
+              </Center>
+            )}
+            <Text fontWeight={400} fontSize={"sm"} mb={2} px={2}>
               {formatTags(questionResult?.answer?.message.content)}
             </Text>
           </Collapse>
@@ -255,11 +270,9 @@ export default function SearchBar({
                   borderRadius={"md"}
                   objectFit={"cover"}
                 />
-                <Flex direction={"column"} ml={4}>
-                  <Text fontWeight={400} fontSize={"xl"}>
-                    {video?.name}
-                  </Text>
-                  <Text fontWeight={300} fontSize={"sm"}>
+                <Flex direction={"column"} ml={2}>
+                  <RenderTitle title={video?.name} />
+                  <Text fontWeight={300} fontSize={"sm"} ml={2}>
                     <Badge mr={2}>
                       {formatTime(result.context.start, video?.id)}
                     </Badge>
