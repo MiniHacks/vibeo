@@ -12,7 +12,13 @@ from backend.connections import db
 from backend.constants import ENV_PATH, FILE_DIR
 from backend.models import DownloadRequest
 from backend.stream import *
-from backend.utils import process_video, get_file, query_vector_db, make_thumbnail
+from backend.utils import (
+    process_video,
+    get_file,
+    query_vector_db,
+    make_thumbnail,
+    get_sentence,
+)
 
 logger.setLevel("DEBUG")
 
@@ -37,7 +43,7 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
         vid, _, index = id.split("_")
 
         doc = get_file(vid)
-        sentence = doc["sentences"][int(index)]
+        sentence = get_sentence(doc, int(index))
         relevant_sentences.append({"id": vid, "sentence": sentence})
 
     relevant_sections = []
@@ -45,7 +51,7 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
         vid, _, index = id.split("_")
 
         doc = get_file(vid)
-        section = doc["sections"][int(index)]
+        section = doc[int(index)]
         relevant_sections.append({"id": vid, "section": section})
 
     return {

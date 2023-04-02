@@ -50,6 +50,16 @@ def parse_srt_to_words(srt_content: str) -> List[Word]:
     return words
 
 
+def get_sentence(doc: List[Section], index: int):
+    count = 0
+    for section in doc:
+        for sentence in section.sentences:
+            if count == index:
+                return sentence
+            count += 1
+    return None
+
+
 def accumulate_words_to_sentences(
     words: List[Word], end_chars: str = ".!?"
 ) -> List[Sentence]:
@@ -215,7 +225,7 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     return "lgtm"
 
 
-def get_file(vid, transcript_cache=transcript_cache):
+def get_file(vid, transcript_cache=transcript_cache) -> List[Section]:
     # Check if the file is already in the local cache
     doc = transcript_cache.get(vid)
     if doc is not None:
