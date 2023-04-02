@@ -2,16 +2,16 @@
 // @ts-nocheck
 import React, { TouchEventHandler, useCallback, useEffect, useRef, useState } from "react";
 
-type Point = {
+export type Point = {
   x: number;
   y: number;
   lineWidth: number;
   color: string;
 };
 
-type Stroke = Point[];
+export type Stroke = Point[];
 
-const PenCanvas = ({ width, height, color, setUndoFunction }) => {
+const PenCanvas = ({ width, height, color,  }) => {
   const [isMousedown, setIsMousedown] = useState(false);
   const [points, setPoints] = useState<Stroke>([]);
   const [strokeHistory, setStrokeHistory] = useState<Stroke[]>([]);
@@ -72,10 +72,6 @@ const PenCanvas = ({ width, height, color, setUndoFunction }) => {
       drawOnCanvas(stroke);
     });
   }, [drawOnCanvas, strokeHistory]);
-
-  useEffect(() => {
-    setUndoFunction(undoDraw);
-  }, []);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
