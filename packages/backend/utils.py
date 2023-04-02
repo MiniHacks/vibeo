@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import List, Dict, Union
 import re
 from pathlib import Path
@@ -118,6 +119,7 @@ def convert_to_seconds(timestamp: str) -> float:
     return round(total_seconds, 2)
 
 
+@lru_cache(maxsize=None)
 def get_embedding(input: str) -> List[float]:
     embed_response = openai.Embedding.create(
         input=input, model="text-embedding-ada-002"

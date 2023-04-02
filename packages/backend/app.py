@@ -12,7 +12,7 @@ import openai
 
 from backend.models import DownloadRequest
 from backend.stream import *
-from backend.utils import get_embedding, process_video, get_file, query_vector_db
+from backend.utils import process_video, get_file, query_vector_db
 from backend.constants import ENV_PATH, FILE_DIR
 from backend.connections import db
 
