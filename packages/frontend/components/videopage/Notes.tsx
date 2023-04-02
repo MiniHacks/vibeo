@@ -7,7 +7,7 @@ import {
   TagProps,
   Text,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { defaultUsers, VideoControlsUser } from "./VideoControls";
 
 export type NoteUser = {
@@ -95,13 +95,39 @@ const dummyNotes: Note[] = [
 const NoteSingle = ({
   note,
   handleNoteClick,
+  currentTime,
+  arr,
+  index,
 }: {
   note: Note;
   handleNoteClick: (time: number) => void;
+  currentTime: number;
+  arr: Note[];
+  index: number;
 }): JSX.Element => {
   const { creator } = note;
+  const ref = useRef<HTMLDivElement>(null);
+  let prevTime = -1;
+  if (index > 0) {
+    prevTime = arr[index - 1].time;
+  }
+  const isFirst = prevTime !== note.time;
+  const isCurrent = currentTime && Math.abs(currentTime - note.time) < 1;
+
+  useEffect(() => {
+    if (isCurrent && ref.current && isFirst) {
+      const current = ref.current as HTMLDivElement;
+      console.log(current);
+      current?.parentElement?.scroll({
+        top:
+          (current?.offsetTop ?? 0) - (current?.parentElement?.offsetTop ?? 0),
+        behavior: "smooth",
+      });
+    }
+  }, [isCurrent]);
   return (
     <Box
+      ref={ref}
       key={note.time}
       display={"flex"}
       alignItems={"center"}
@@ -111,7 +137,7 @@ const NoteSingle = ({
       role={"group"}
     >
       <TimeTag time={note.time} />
-      <Box display={"flex"}>
+      <Box display={"flex"} bg={isCurrent ? "yellow.100" : "white"}>
         {note.isImage ? (
           <Image src={note.content} boxSize={"40px"} objectFit={"cover"} />
         ) : (
@@ -171,13 +197,22 @@ const Notes = ({
   };
 
   return (
-    <Box w={"100%"}>
-      {notes
-        ?.sort((a, b) => ((a?.timestamp ?? 0) < (b.timestamp ?? 0) ? -1 : 1))
-        ?.sort((a, b) => (a.time < b.time ? -1 : 1))
-        .map((note: Note) => (
-          <NoteSingle note={note} handleNoteClick={handleNoteClick} />
-        ))}
+    <Box w={"100%"} flexGrow={1} overflow={"hidden"} height={"100%"}>
+      <Box mt={4} overflowX={"auto"} maxH={"calc(100% - 10px)"} pb={16}>
+        {notes
+          ?.sort((a, b) => ((a?.timestamp ?? 0) < (b.timestamp ?? 0) ? -1 : 1))
+          ?.sort((a, b) => (a.time < b.time ? -1 : 1))
+          .map((note: Note, index, arr) => (
+            <NoteSingle
+              key={JSON.stringify(note)}
+              arr={arr}
+              index={index}
+              note={note}
+              handleNoteClick={handleNoteClick}
+              currentTime={currentTime}
+            />
+          ))}
+      </Box>
     </Box>
   );
 };
