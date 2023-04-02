@@ -1,21 +1,19 @@
-import { Box, Collapse, useDisclosure } from "@chakra-ui/react";
-import Button from "./Button";
+import { Box, Collapse } from "@chakra-ui/react";
 
-export default function Tooltip(): JSX.Element {
-  const { isOpen, onToggle } = useDisclosure();
+type TooltipProps = {
+  children: React.ReactNode;
+  isOpen: boolean;
+};
+
+export default function Tooltip({
+  children,
+  isOpen,
+}: TooltipProps): JSX.Element {
   return (
-    <>
-      <Button onClick={onToggle}>Click Me</Button>
-      <Collapse in={isOpen} animateOpacity>
-        <Box
-          p={8}
-          my={4}
-          bg={"#F1AD0E"} // FIXME: idk what color to actually make this / put in theme
-          rounded={"lg"}
-        >
-          meow meow meow meow
-        </Box>
-      </Collapse>
-    </>
+    <Collapse in={isOpen} animateOpacity>
+      <Box p={8} my={4} bg={"#F1AD0E"} rounded={"lg"}>
+        {children}
+      </Box>
+    </Collapse>
   );
 }
