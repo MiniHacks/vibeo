@@ -147,7 +147,11 @@ const Vid: NextPage = () => {
             borderBottom={"0px"}
           >
             <Text fontSize={"xl"} fontWeight={"bold"}>
-              Transcript
+              {video.done
+                ? "Transcript"
+                : `${video.processingMessage}...${
+                    Math.round(video.progress * 1000) / 10
+                  }%`}
             </Text>
             <Transcript videoRef={videoRef} videoData={video as VideoData} />
           </Card>
