@@ -223,9 +223,10 @@ def get_file(vid, transcript_cache=transcript_cache):
     doc = transcript_cache.get(vid)
     if doc is not None:
         return doc
+    logger.warning(f"File {vid} not in cache, fetching from firestore")
 
     doc_ref = db.collection("videos").document(vid)
-    doc = doc_ref.get()
+    doc = doc_ref.get().to_dict()
 
     # Update the local cache with the fetched file
     transcript_cache.set(vid, doc)

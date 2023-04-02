@@ -42,26 +42,16 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
     relevant_sentences = []
     for id in sentence_ids:
         vid, _, index = id.split("_")
+
         doc = get_file(vid)
-
-        if not doc.exists:
-            continue
-
-        doc = doc.to_dict()
         sentence = doc["sentences"][int(index)]
         relevant_sentences.append({"id": vid, "sentence": sentence})
 
     relevant_sections = []
     for id in section_ids:
         vid, _, index = id.split("_")
-        doc_ref = db.collection("videos").document(vid)
-        doc = doc_ref.get()
 
-        if not doc.exists:
-            continue
-
-        doc = doc.to_dict()
-        section = doc["sections"][int(index)]
+        doc = get_file(vid)
         section = doc["sections"][int(index)]
         relevant_sections.append({"id": vid, "section": section})
 
