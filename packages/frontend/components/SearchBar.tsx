@@ -91,6 +91,40 @@ export default function SearchBar({
     return `${minutes.toString()}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const highlightText = (text: string, highlight: string) => {
+    const lowerText = text.toLowerCase();
+    const lowerHighlight = highlight.toLowerCase();
+
+    const result: JSX.Element[] = [];
+
+    let i = 0;
+    while (i < text.length) {
+      let match = false;
+      for (let j = 0; j < highlight.length && i + j < text.length; j++) {
+        if (lowerText[i + j] !== lowerHighlight[j]) {
+          break;
+        }
+        if (j === highlight.length - 1) {
+          match = true;
+        }
+      }
+
+      if (match) {
+        result.push(
+          <Text as={"span"} fontWeight={"bold"}>
+            {text.slice(i, i + highlight.length)}
+          </Text>
+        );
+        i += highlight.length;
+      } else {
+        result.push(<Text as={"span"}>{text[i]}</Text>);
+        i += 1;
+      }
+    }
+
+    return result;
+  };
+
   return (
     <>
       <InputGroup onClick={onOpen}>
@@ -150,7 +184,6 @@ export default function SearchBar({
             <Text fontWeight={"semibold"} fontSize={"xl"} mb={2}>
               {questionResult?.answer?.message.content}
             </Text>
-            <Text fontSize={"xl"}>↪ [XX] of Video Title</Text>
           </Collapse>
           {((searchResults != null && searchResults.length > 0) ||
             (questionResult && questionResult?.content.length > 0)) && (
@@ -172,8 +205,9 @@ export default function SearchBar({
                   <Text fontWeight={"bold"} fontSize={"xl"}>
                     {video.name}
                   </Text>
-                  <Text fontWeight={"light"}>
-                    [{video.timestamp}] {video.context}
+                  <Text>
+                    [{formatTime(result.context.start)}]{" "}
+                    {highlightText(result.context.text, result.highlight.text)}
                   </Text>
                 </Flex>
               </Flex>

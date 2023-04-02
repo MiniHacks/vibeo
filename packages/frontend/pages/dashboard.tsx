@@ -74,7 +74,8 @@ const Dashboard: NextPage = () => {
         .then((result: SearchResult[]) => {
           console.log("search");
           console.log(result);
-          setVideoFilter(result.map((ele) => ele.vid));
+          setVideoFilter(null /* result.map((ele) => ele.vid) */);
+          setQuestionResult(null);
           setSearchResults(result);
         });
     } else if (qry.length > 0) {
@@ -90,7 +91,8 @@ const Dashboard: NextPage = () => {
         .then((result: QuestionResult) => {
           console.log("search");
           console.log(result);
-          setVideoFilter(result.content.map((ele) => ele.vid));
+          setVideoFilter(null /* result.content.map((ele) => ele.vid) */);
+          setSearchResults(null);
           setQuestionResult(result);
         });
     }
