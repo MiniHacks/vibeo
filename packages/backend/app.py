@@ -116,7 +116,10 @@ async def stream_video(request: Request, filename: str):
             [vid, time] = filename[:-4].split("_")
             make_thumbnail(vid, time)
 
-        return FileResponse(os.path.join(FILE_DIR, filename))
+        headers = {
+            "Cache-Control": "public, max-age=31536000"
+        }
+        return FileResponse(os.path.join(FILE_DIR, filename), headers=headers)
 
     video_path = os.path.join(FILE_DIR, filename + ".mp4")
     try:
