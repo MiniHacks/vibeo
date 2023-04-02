@@ -9,6 +9,9 @@ import {
   ModalOverlay,
   ModalContent,
   Divider,
+  Flex,
+  Heading,
+  Text
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
 
@@ -82,7 +85,25 @@ export default function SearchBar({
             </InputRightElement>
           </InputGroup>
           <Divider my={2} />
-          <div>Quote from some video lmao.</div>
+          <div>
+            Quote from some video. Something something we are really cool
+            people.
+          </div>
+          <div>↪ [XX:XX] of Video Title</div>
+          <Divider my={2} />
+
+          <Flex>
+            <Image
+              w={"20%"}
+              src={"https://via.placeholder.com/400x300"}
+              alt={"placeholder"}
+              borderRadius={"md"}
+            />
+            <Flex direction="column">
+              <Text>Video Title</Text>
+              <Text>Insert quote or context of where the searched term appears here.</Text>
+            </Flex>
+          </Flex>
         </ModalContent>
       </Modal>
     </>
