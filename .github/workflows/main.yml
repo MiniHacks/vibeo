@@ -19,5 +19,6 @@ jobs:
             source ~/.nvm/nvm.sh  
             cd ~/vibeo/packages/frontend
             git pull
+            yarn install
             yarn build
             pm2 restart vibeo --update-env

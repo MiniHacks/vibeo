@@ -1,4 +1,6 @@
 import type { NextPage } from "next";
+import { formatRelative } from "date-fns";
+
 import {
   Box,
   Heading,
@@ -22,6 +24,7 @@ import SearchBar from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
 import Tooltip from "../components/Tooltip";
+import RenderTitle from "../components/RenderTitle";
 
 const Dashboard: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -120,6 +123,8 @@ const Dashboard: NextPage = () => {
 
   // const showCards = () => {};
 
+  console.log(videos);
+
   return (
     <PageLayout title={"dashboard | vibeo - your personal video repository"}>
       <Box px={[5, 10]} py={10}>
@@ -158,12 +163,21 @@ const Dashboard: NextPage = () => {
                       width={"100%"}
                       borderRadius={"md"}
                     />
-                    <Text fontSize={"xl"} fontWeight={600} mt={3} mb={0} mx={2}>
-                      {video.name}
+
+                    <Text
+                      fontSize={"xs"}
+                      fontWeight={300}
+                      mt={2}
+                      mb={1}
+                      mx={2}
+                      color={"gray.500"}
+                    >
+                      {formatRelative(
+                        new Date(video.created.seconds * 1000),
+                        new Date()
+                      )}
                     </Text>
-                    <Text fontSize={"sm"} fontWeight={300} my={2} mx={2}>
-                      {new Date(video.created.seconds * 1000).toLocaleString()}
-                    </Text>
+                    <RenderTitle title={video?.name ?? "Unnamed Video"} />
                   </Card>
                 </WrapItem>
               ))}
