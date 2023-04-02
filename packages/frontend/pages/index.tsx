@@ -60,8 +60,8 @@ const Home: NextPage = () => {
               <Heading flexGrow={1} fontWeight={"normal"} fontSize={"7xl"}>
                 vibeo
               </Heading>
-              <Text mb={"2em"} fontWeight={"light"} fontSize={"3xl"}>
-                your shareable vault for everything audio and video
+              <Text mb={"2em"} fontWeight={"light"} fontSize={"3xl"} mt={2}>
+                your notebook, with superpowers
               </Text>
               <Button fontSize={"3xl"} py={3} px={12} onClick={login}>
                 Login
