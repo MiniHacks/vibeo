@@ -124,10 +124,6 @@ const Dashboard: NextPage = () => {
     );
   }
 
-  // shows tooltip upon question search query
-
-  // const showCards = () => {};
-
   console.log(videos);
 
   return (
