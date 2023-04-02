@@ -1,20 +1,20 @@
-from typing import List
+from functools import lru_cache
+from typing import List, Dict, Union
 import re
 from pathlib import Path
 from itertools import chain
 import subprocess
-import logging
 from random import random
 
+from fastapi.logger import logger
 from backend.models import Word, Sentence, Section, Transcript
 from backend.constants import FILE_DIR, WHISPER__MODEL
-from backend.connections import collection
+from backend.connections import collection, db
 
 import openai
 from google.cloud.firestore import DocumentReference
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel("DEBUG")
 
 
 def extract_wav_from_mp4(input_mp4: Path, output_wav: Path):
@@ -118,6 +118,7 @@ def convert_to_seconds(timestamp: str) -> float:
     return round(total_seconds, 2)
 
 
+@lru_cache(maxsize=None)
 def get_embedding(input: str) -> List[float]:
     embed_response = openai.Embedding.create(
         input=input, model="text-embedding-ada-002"
@@ -204,3 +205,59 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     logger.info("Upserted vectors")
 
     return "lgtm"
+
+
+class TranscriptCache:
+    def __init__(self):
+        self.cache = {}
+
+    def get(self, key):
+        return self.cache.get(key)
+
+    def set(self, key, value):
+        self.cache[key] = value
+
+
+transcript_cache = TranscriptCache()
+
+
+def get_file(vid, transcript_cache=transcript_cache):
+    # Check if the file is already in the local cache
+    doc = transcript_cache.get(vid)
+    if doc is not None:
+        return doc
+    logger.warning(f"File {vid} not in cache, fetching from firestore")
+
+    doc_ref = db.collection("videos").document(vid)
+    doc = doc_ref.get().to_dict()
+
+    # Update the local cache with the fetched file
+    transcript_cache.set(vid, doc)
+
+    return doc
+
+
+def query_vector_db(
+    query: str,
+    where: Union[Dict[str, str], None] = None,
+    count: int = 5,
+    collection=collection,
+):
+    query_embedding = get_embedding(query)
+
+    try:
+        if where:
+            results = collection.query(
+                query_embedding,
+                n_results=count,
+                where=where,  # type: ignore
+            )
+        else:
+            results = collection.query(
+                query_embedding,
+                n_results=count,
+            )
+        return results["ids"][0]
+    except Exception as e:
+        logger.error(f"Vector db query failed: {e}")
+        return []

@@ -5,20 +5,18 @@ import threading
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.logger import logger
 from firebase_admin import firestore
 from pytube import YouTube
 import openai
 
-
 from backend.models import DownloadRequest
 from backend.stream import *
-from backend.utils import get_embedding, process_video
+from backend.utils import process_video, get_file, query_vector_db
 from backend.constants import ENV_PATH, FILE_DIR
-from backend.connections import db, collection
+from backend.connections import db
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
+logger.setLevel("DEBUG")
 
 logger.info(f"Loading environment variables from {ENV_PATH}")
 load_dotenv(dotenv_path=ENV_PATH)
@@ -36,53 +34,22 @@ async def root():
 
 @app.get("/search")
 async def search(query: str, uid: str, vid: Union[str, None] = None):
-    query_embedding = get_embedding(query)
-    try:
-        sentence_results = collection.query(
-            query_embeddings=query_embedding,
-            n_results=5,
-            where={"uid": uid, "type": "sentence"},
-        )
-        sentence_ids = sentence_results["ids"][0]
-    except Exception as e:
-        logger.error(e)
-        sentence_ids = []
-    try:
-        section_results = collection.query(
-            query_embeddings=query_embedding,
-            n_results=5,
-            where={"uid": uid, "type": "section"},
-        )
-        section_ids = section_results["ids"][0]
-    except Exception as e:
-        logger.error(e)
-        section_results = []
-        section_ids = []
+    sentence_ids = query_vector_db(query, where={"uid": uid, "type": "sentence"})
+    section_ids = query_vector_db(query, where={"uid": uid, "type": "section"})
 
     relevant_sentences = []
     for id in sentence_ids:
         vid, _, index = id.split("_")
-        doc_ref = db.collection("videos").document(vid)
-        doc = doc_ref.get()
 
-        if not doc.exists:
-            continue
-
-        doc = doc.to_dict()
+        doc = get_file(vid)
         sentence = doc["sentences"][int(index)]
         relevant_sentences.append({"id": vid, "sentence": sentence})
 
     relevant_sections = []
     for id in section_ids:
         vid, _, index = id.split("_")
-        doc_ref = db.collection("videos").document(vid)
-        doc = doc_ref.get()
 
-        if not doc.exists:
-            continue
-
-        doc = doc.to_dict()
-        section = doc["sections"][int(index)]
+        doc = get_file(vid)
         section = doc["sections"][int(index)]
         relevant_sections.append({"id": vid, "section": section})
 
