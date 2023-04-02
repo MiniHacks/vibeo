@@ -3,14 +3,15 @@ import {
   Box,
   Flex,
   HStack,
+  Image,
   Modal,
-  ModalOverlay,
   ModalContent,
+  ModalOverlay,
   Spinner,
   Text,
   useDisclosure,
-  Image,
 } from "@chakra-ui/react";
+import { ArrowBackIcon } from "@chakra-ui/icons";
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import {
@@ -22,13 +23,7 @@ import {
 } from "reactfire";
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 import QRCode from "qrcode";
-import {
-  getAuth,
-  getDatabase,
-  ref,
-  onDisconnect,
-  set,
-} from "firebase/database";
+import { getDatabase, onDisconnect, ref, set } from "firebase/database";
 
 import dynamic from "next/dynamic";
 import PageLayout from "../../components/Layout/PageLayout";
@@ -256,10 +251,24 @@ const Vid: NextPage = () => {
       <Box
         minHeight={"100vh"}
         px={10}
-        pt={10}
+        pt={6}
         display={"flex"}
         flexDirection={"column"}
       >
+        <Text
+          pb={2}
+          _hover={{
+            // textDecoration: "underline",
+            cursor: "pointer",
+            opacity: 0.8,
+          }}
+          onClick={() => router.push("/dashboard")}
+          fontWeight={300}
+          opacity={0.5}
+        >
+          <ArrowBackIcon mr={2} />
+          Back to Dashboard
+        </Text>
         <Flex mb={10}>
           <Box flexGrow={1}>
             <VideoControls
