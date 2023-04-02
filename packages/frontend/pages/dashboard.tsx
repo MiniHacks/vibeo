@@ -177,7 +177,7 @@ const Dashboard: NextPage = () => {
                       }}
                     >
                       <Image
-                        src={"https://via.placeholder.com/640x360"}
+                        src={`https://backend.vibeo.video/video/${video.id}_0.png`}
                         alt={"placeholder"}
                         width={"100%"}
                         borderRadius={"md"}
