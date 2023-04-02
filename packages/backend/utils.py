@@ -181,7 +181,12 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
 
     logger.info("Upserting transcript to firestore")
     doc.update(
-        {"transcript": [x.dict() for x in sections], "progress": 1, "done": True, "notes": []}
+        {
+            "transcript": [x.dict() for x in sections],
+            "progress": 1,
+            "done": True,
+            "notes": [],
+        }
     )
     transcript_cache.set(vid, sections)
     logger.info("Upserted transcript to firestore")
@@ -243,7 +248,7 @@ def get_transcript(vid, transcript_cache=transcript_cache) -> List[Section]:
 def query_vector_db(
     query: str,
     where: Union[Dict[str, str], None] = None,
-    count: int = 5,
+    count: int = 3,
     collection=collection,
 ):
     print(f"There are {collection.count()} vectors in the db before searching")
@@ -274,8 +279,8 @@ def make_thumbnail(vid: str, time: str):
 
 
 def answer(query, context: List[Selection]):
-    system_prompt = """You are an expert assistant.
-Your job is to synthesize relevant context from videos to answer a question.
+    system_prompt = """You are an expert assistant. I trust your judgment.
+Your job is to synthesize relevant context from videos to concisely answer a question.
 Your input will be in the following format:
 
 Question: <question>
@@ -284,7 +289,8 @@ Question: <question>
 [2]: <context>
 ...
 
-Write a response factoring in all context that you deem relevant, including citations in the form of [1], [2], etc.
+Write a response factoring in only the context that you deem relevant, including citations in the form of [1], [2], etc.
+If the answer is not in the videos, declare as much. Avoid refering to yourself or your own knowledge.
 """
     context_str = "\n".join(
         [f"[{i}]: {x.context.text}" for i, x in enumerate(context, 1)]
@@ -297,3 +303,35 @@ Write a response factoring in all context that you deem relevant, including cita
     print(prompt)
     completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
     return completion.choices[0]  # type: ignore
+
+
+async def stream_answer(query, context: List[Selection]):
+    system_prompt = """You are an expert assistant. I trust your judgment.
+Your job is to synthesize relevant context from videos to concisely answer a question.
+Your input will be in the following format:
+
+Question: <question>
+
+[1]: <context>
+[2]: <context>
+...
+
+Write a response factoring in only the context that you deem relevant, including citations in the form of [1], [2], etc.
+If the answer is not in the videos, declare as much. Avoid refering to yourself or your own knowledge.
+"""
+    context_str = "\n".join(
+        [f"[{i}]: {x.context.text}" for i, x in enumerate(context, 1)]
+    )
+    prompt = f"Question: {query}\n\n{context_str}"
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt},
+    ]
+    print(prompt)
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo", messages=messages, stream=True
+    )
+    # iterate through the stream of events
+    for chunk in completion:
+        chunk_message = chunk["choices"][0]["delta"]  # type: ignore
+        yield f"data: {chunk_message}\n\n"
