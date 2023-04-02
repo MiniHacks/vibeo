@@ -1,3 +1,4 @@
+from fastapi import File, UploadFile
 from pydantic import BaseModel
 from typing import List
 
@@ -48,4 +49,8 @@ class Selection(BaseModel):
 
 class DownloadRequest(BaseModel):
     url: str
+    uid: str
+
+class UploadRequest(BaseModel):
+    file: UploadFile = File(...)
     uid: str

@@ -1,14 +1,17 @@
 import { Box, HStack, useToken } from "@chakra-ui/react";
-import React from "react";
+import React, { useState } from "react";
 import Button from "../Button";
 import Card from "../Card";
 import ColorPicker from "./ColorPicker";
 
 export default function CanvasToolbar({
   onSetColor,
+  onSave,
 }: {
   onSetColor: (color: string) => void;
+  onSave: () => Promise<void>;
 }): JSX.Element {
+  const [isSaving, setIsSaving] = useState(false);
   const colors = [
     "pink.500",
     "gray.500",
@@ -23,9 +26,16 @@ export default function CanvasToolbar({
   ];
 
   const tokens = useToken("colors", colors);
+  const clear = () => {
+    if (typeof window !== "undefined")
+      window.document
+        ?.querySelector("canvas")
+        ?.getContext("2d")
+        ?.clearRect(0, 0, 10000, 10000);
+  };
   return (
     <HStack spacing={3} justifyContent={"flex-end"}>
-      <Button colorScheme={"yellow"} onClick={() => null}>
+      <Button colorScheme={"yellow"} onClick={() => clear()}>
         Clear
       </Button>
       <Button
@@ -38,7 +48,17 @@ export default function CanvasToolbar({
         <ColorPicker onSetColor={onSetColor} colors={tokens} />
       </Button>
       {/* <Box flexGrow={1} /> */}
-      <Button colorScheme={"blue"} zIndex={-1}>
+      <Button
+        colorScheme={"blue"}
+        onClick={() => {
+          setIsSaving(true);
+          onSave().then(() => {
+            setIsSaving(false);
+            clear();
+          });
+        }}
+        isLoading={isSaving}
+      >
         Save
       </Button>
     </HStack>

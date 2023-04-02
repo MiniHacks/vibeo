@@ -2,7 +2,7 @@ import {
   Avatar,
   Badge,
   Box,
-  Image,
+  Image as ChakraImage,
   Tag,
   TagProps,
   Text,
@@ -25,8 +25,8 @@ export type Note = {
 
 export type NotesProps = {
   notes?: Note[];
-  users?: VideoControlsUser[];
   videoRef: React.RefObject<HTMLVideoElement> | null;
+  vid: string;
 };
 const formatTime = (timeInSeconds: number): string => {
   const minutes = Math.floor(timeInSeconds / 60);
@@ -98,12 +98,14 @@ const NoteSingle = ({
   currentTime,
   arr,
   index,
+  vid,
 }: {
   note: Note;
   handleNoteClick: (time: number) => void;
   currentTime: number;
   arr: Note[];
   index: number;
+  vid: string;
 }): JSX.Element => {
   const { creator } = note;
   const ref = useRef<HTMLDivElement>(null);
@@ -113,6 +115,12 @@ const NoteSingle = ({
   }
   const isFirst = prevTime !== note.time;
   const isCurrent = currentTime && Math.abs(currentTime - note.time) < 1;
+  const isFirstImageForThisTime = arr.reduce((acc, curr, i) => {
+    if (i < index && curr.time === note.time && note.isImage) {
+      return false;
+    }
+    return acc;
+  }, true);
 
   useEffect(() => {
     if (isCurrent && ref.current && isFirst) {
@@ -125,6 +133,30 @@ const NoteSingle = ({
       });
     }
   }, [isCurrent]);
+
+  const onClick = () => {
+    if (note.isImage && typeof window !== "undefined") {
+      // load image onto canvas
+      const canvas = document.querySelector("canvas") as HTMLCanvasElement;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const img = new Image();
+      img.src = note.content;
+
+      img.onload = () => {
+        ctx?.drawImage(img, 0, 0);
+      };
+    } else if (typeof window !== "undefined") {
+      // clear canvas
+      const canvas = document.querySelector("canvas") as HTMLCanvasElement;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  };
   return (
     <Box
       ref={ref}
@@ -132,14 +164,35 @@ const NoteSingle = ({
       display={"flex"}
       alignItems={"center"}
       mt={"10px"}
-      onClick={() => handleNoteClick(note.time)}
+      onClick={() => {
+        handleNoteClick(note.time);
+        onClick();
+      }}
       _hover={{ cursor: "pointer" }}
       role={"group"}
     >
       <TimeTag time={note.time} />
-      <Box display={"flex"} bg={isCurrent ? "yellow.100" : "white"}>
+      <Box bg={isCurrent ? "yellow.100" : "white"}>
         {note.isImage ? (
-          <Image src={note.content} boxSize={"40px"} objectFit={"cover"} />
+          <Box pos={"relative"} height={"180px"} width={"320px"}>
+            <ChakraImage
+              pos={"absolute"}
+              height={"180px"}
+              width={"320px"}
+              src={`https://backend.vibeo.video/video/${vid}_${note.time}.png`}
+              borderRadius={"lg"}
+              _groupHover={{
+                opacity: 0.9,
+              }}
+            />
+            <ChakraImage
+              src={note.content}
+              objectFit={"cover"}
+              height={"180px"}
+              width={"320px"}
+              pos={"absolute"}
+            />
+          </Box>
         ) : (
           <Text _hover={{ bgColor: "yellow" }}>{note.content}</Text>
         )}
@@ -164,11 +217,7 @@ const NoteSingle = ({
   );
 };
 
-const Notes = ({
-  notes = dummyNotes,
-  users = defaultUsers,
-  videoRef,
-}: NotesProps) => {
+const Notes = ({ notes = dummyNotes, vid, videoRef }: NotesProps) => {
   const [currentTime, setCurrentTime] = useState(0);
 
   useEffect(() => {
@@ -204,6 +253,7 @@ const Notes = ({
           ?.sort((a, b) => (a.time < b.time ? -1 : 1))
           .map((note: Note, index, arr) => (
             <NoteSingle
+              vid={vid}
               key={JSON.stringify(note)}
               arr={arr}
               index={index}
