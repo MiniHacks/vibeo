@@ -10,10 +10,11 @@ import {
   WrapItem,
   useDisclosure,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
 import { collection, orderBy, query, where } from "firebase/firestore";
+import debounce from "lodash/debounce";
 import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
@@ -147,24 +148,26 @@ const Dashboard: NextPage = () => {
         </HStack>
         <Tooltip isOpen={showingSearchResponse}>{searchResponse}</Tooltip>
         <Wrap overflow={"unset"} spacing={6}>
-          {videos.map((video) => (
-            <WrapItem>
-              <Card p={2} w={328}>
-                <Image
-                  src={"https://via.placeholder.com/640x360"}
-                  alt={"placeholder"}
-                  width={"100%"}
-                  borderRadius={"md"}
-                />
-                <Text fontSize={"xl"} fontWeight={600} mt={3} mb={0} mx={2}>
-                  {video.name}
-                </Text>
-                <Text fontSize={"sm"} fontWeight={300} my={2} mx={2}>
-                  {new Date(video.created.seconds * 1000).toLocaleString()}
-                </Text>
-              </Card>
-            </WrapItem>
-          ))}
+          {videos == null
+            ? status
+            : videos.map((video) => (
+                <WrapItem>
+                  <Card p={2} w={328}>
+                    <Image
+                      src={"https://via.placeholder.com/640x360"}
+                      alt={"placeholder"}
+                      width={"100%"}
+                      borderRadius={"md"}
+                    />
+                    <Text fontSize={"xl"} fontWeight={600} mt={3} mb={0} mx={2}>
+                      {video.name}
+                    </Text>
+                    <Text fontSize={"sm"} fontWeight={300} my={2} mx={2}>
+                      {new Date(video.created.seconds * 1000).toLocaleString()}
+                    </Text>
+                  </Card>
+                </WrapItem>
+              ))}
         </Wrap>
       </Box>
       <AddVideoModal open={isOpen} onClose={onClose} uid={uid} />
