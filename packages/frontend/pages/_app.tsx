@@ -10,11 +10,13 @@ import {
 } from "firebase/auth";
 import {
   AuthProvider,
+  DatabaseProvider,
   FirebaseAppProvider,
   FirestoreProvider,
 } from "reactfire";
 
 import { getFirestore } from "@firebase/firestore";
+import { getDatabase } from "@firebase/database";
 import theme from "../theme";
 import configuration from "../configuration";
 import { isBrowser } from "../lib/generic/isBrowser";
@@ -58,9 +60,11 @@ function MyApp(props: AppProps): JSX.Element {
     <FirebaseAppProvider firebaseApp={app}>
       <AuthProvider sdk={auth}>
         <FirestoreProvider sdk={getFirestore(app)}>
-          <ChakraProvider theme={theme}>
-            <Component {...pageProps} />
-          </ChakraProvider>
+          <DatabaseProvider sdk={getDatabase(app)}>
+            <ChakraProvider theme={theme}>
+              <Component {...pageProps} />
+            </ChakraProvider>
+          </DatabaseProvider>
         </FirestoreProvider>
       </AuthProvider>
     </FirebaseAppProvider>
