@@ -11,12 +11,25 @@ import {
   useDisclosure,
   Image,
 } from "@chakra-ui/react";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { useAuth, useFirestore, useFirestoreDocData } from "reactfire";
+import {
+  useAuth,
+  useDatabase,
+  useDatabaseObjectData,
+  useFirestore,
+  useFirestoreDocData,
+} from "reactfire";
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 import QRCode from "qrcode";
-import { update } from "@firebase/database";
+import {
+  getAuth,
+  getDatabase,
+  ref,
+  onDisconnect,
+  set,
+} from "firebase/database";
+
 import PageLayout from "../../components/Layout/PageLayout";
 import useAuthUser from "../../lib/hooks/useAuthUser";
 import Card from "../../components/Card";
@@ -29,6 +42,7 @@ import Transcript, { VideoData } from "../../components/Transcript";
 import NewNote from "../../components/videopage/NewNote";
 import Notes, { Note } from "../../components/videopage/Notes";
 import Footer from "../../components/Layout/Footer";
+import { stringToColor } from "../../lib/generic/toInt";
 
 const Vid: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -42,9 +56,32 @@ const Vid: NextPage = () => {
   const [undo, setUndo] = useState<() => void>(voidFunc);
   const [isRecording, setRecording] = useState(false);
   const [isAudioOnly, setAudioOnly] = useState(false);
-
+  const database = useDatabase();
   const router = useRouter();
   const vid = router.query.vid as string;
+  const { status: presenceStatus, data: presenceData } = useDatabaseObjectData(
+    ref(database, `videos/${vid}/`),
+    { idField: "id" }
+  );
+  const { status: userStatus, data: userData } = useDatabaseObjectData(
+    ref(database, `users/`),
+    { idField: "id" }
+  );
+
+  const users = Object.keys(presenceData ?? {}).filter(
+    (k) => k.length > 9 && k !== authUser?.uid && presenceData[k].loc >= 0
+  );
+
+  const presence = users.map((u) => {
+    const { name, photoURL } = userData[u].nameandpic;
+    return {
+      id: u,
+      name,
+      color: stringToColor(name),
+      iconUrl: photoURL,
+      progress: presenceData[u].loc,
+    };
+  });
 
   // get video from firebase
   const firestore = useFirestore();
@@ -52,6 +89,38 @@ const Vid: NextPage = () => {
   const { status, data: video } = useFirestoreDocData(videoDocRef, {
     idField: "id",
   });
+
+  useEffect(() => {
+    const rdbref = ref(getDatabase(), `videos/${vid}/${authUser?.uid}/loc`);
+    const userRef = ref(getDatabase(), `users/${authUser?.uid}/nameandpic`);
+
+    set(userRef, {
+      name: authUser?.displayName || "",
+      photoURL: authUser?.photoURL || "",
+    });
+
+    const onDisconnectRef = onDisconnect(rdbref);
+    const setLoc = (loc: number) => {
+      set(rdbref, loc);
+    };
+
+    onDisconnectRef.set(-1).then(() => {
+      setLoc(0);
+    });
+
+    setLoc(10);
+
+    const updateTime = () => {
+      setLoc(videoRef.current?.currentTime ?? 0);
+    };
+    videoRef.current?.addEventListener("timeupdate", updateTime);
+
+    return () => {
+      setLoc(-1);
+      videoRef.current?.removeEventListener("timeupdate", updateTime);
+    };
+  }, [vid, authUser, videoRef.current]);
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   console.log(video);
 
@@ -176,6 +245,7 @@ const Vid: NextPage = () => {
               videoTitle={video.name}
               href={video.youtube}
               videoRef={videoRef}
+              users={presence}
               endRecording={() =>
                 console.log("Yoo use this to stop the recording")
               }

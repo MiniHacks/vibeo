@@ -274,7 +274,13 @@ const VideoControls = ({
             flexDirection={"column"}
             justifyContent={"center"}
           >
-            <Box bg={"#C4C4C4"} h={"2px"} w={"100%"} borderRadius={"2px"}>
+            <Box
+              bg={"#C4C4C4"}
+              h={"2px"}
+              w={"100%"}
+              borderRadius={"2px"}
+              pos={"relative"}
+            >
               {users.map((user) => (
                 <Box
                   key={user.id}
@@ -282,9 +288,9 @@ const VideoControls = ({
                   h={"10px"}
                   w={"10px"}
                   borderRadius={"50%"}
-                  left={`${user.progress * 100}%`}
+                  left={`${(user.progress * 100) / (duration || 1)}%`}
                   position={"absolute"}
-                  top={"9px"}
+                  top={"-4px"}
                 />
               ))}
               <Box bg={"#000000"} h={"100%"} w={`${progress * 100}%`} />
