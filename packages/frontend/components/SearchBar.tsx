@@ -177,7 +177,7 @@ export default function SearchBar({
           <Collapse in={showingSearchResponse} animateOpacity>
             <Divider my={4} />
             <Text fontWeight={"medium"} fontSize={"xl"} mb={2}>
-              {formatTags(questionResult?.answer?.message.content)}
+              {/* {formatTags(questionResult?.answer?.message.content)} */}
             </Text>
           </Collapse>
           {((searchResults != null && searchResults.length > 0) ||
