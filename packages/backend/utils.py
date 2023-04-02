@@ -254,6 +254,6 @@ def query_vector_db(
 
 
 def make_thumbnail(vid: str, time: str):
-    cmd = f"ffmpeg -ss {time} -i {FILE_DIR}/{vid}.mp4 -vframes 1 {FILE_DIR}/{vid}_{time}.png"
+    cmd = f"ffmpeg -ss {time} -i {FILE_DIR}/{vid}.mp4 -vframes 1 -vf scale=320:180 {FILE_DIR}/{vid}_{time}.png"
     result = subprocess.run(cmd, shell=True)
     return result
