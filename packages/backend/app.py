@@ -102,7 +102,9 @@ async def download_video(request: DownloadRequest, response: Response):
         stream = yt.streams.filter(
             file_extension="mp4",
         ).get_highest_resolution()
-        assert stream is not None
+        if stream is None:
+            print("no stream :(")
+            raise Exception("No stream found")
 
         time, doc = db.collection("videos").add(
             {

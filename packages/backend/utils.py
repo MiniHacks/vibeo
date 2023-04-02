@@ -167,8 +167,8 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     doc.update({"words": [x.dict() for x in words]})
     doc.update({"sentences": [x.dict() for x in sentences]})
     doc.update({"sections": [x.dict() for x in sections]})
+    doc.update({"progress": 1, "done": True})
     logger.info("Upserted transcript to firestore")
-    doc.update({"progress": 1})
 
     logger.info("Generating vectors")
     sections = transcript.sections
@@ -188,6 +188,7 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     section_ids = [f"{vid}_section_{i}" for i in range(len(sections))]
 
     logger.info("Upserting vectors")
+    print(collection.count())
     collection.add(
         embeddings=sentence_embeddings,
         metadatas=sentence_metadatas,  # type: ignore
@@ -199,6 +200,7 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
         metadatas=section_metadatas,  # type: ignore
         ids=section_ids,
     )
+    print(collection.count())
     logger.info("Upserted vectors")
 
     return "lgtm"
