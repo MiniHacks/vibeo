@@ -158,9 +158,7 @@ const Dashboard: NextPage = () => {
             questionResult={questionResult}
             videos={videos}
             py={5}
-            placeholder={
-              "Where are Sasha and Samyok being insufferable people?"
-            }
+            placeholder={"Search for a video or ask a question about a video"}
           />
         </HStack>
         <Wrap overflow={"unset"} spacing={6} justify={"center"}>
