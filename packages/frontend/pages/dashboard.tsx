@@ -22,7 +22,6 @@ import Button from "../components/Button";
 import SearchBar from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
-import Tooltip from "../components/Tooltip";
 
 const Dashboard: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -117,10 +116,6 @@ const Dashboard: NextPage = () => {
     }
   };
 
-  // shows tooltip upon question search query
-
-  // const showCards = () => {};
-
   return (
     <PageLayout title={"dashboard | vibeo - your personal video repository"}>
       <Box px={[5, 10]} py={10}>
@@ -146,7 +141,6 @@ const Dashboard: NextPage = () => {
             }
           />
         </HStack>
-        <Tooltip isOpen={showingSearchResponse}>{searchResponse}</Tooltip>
         <Wrap overflow={"unset"} spacing={6}>
           {videos == null
             ? status
