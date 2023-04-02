@@ -10,7 +10,7 @@ import {
   Wrap,
   WrapItem,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useState } from "react";
 import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
 import { collection, query, where } from "firebase/firestore";
@@ -21,6 +21,7 @@ import Button from "../components/Button";
 import SearchBar from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
+import Tooltip from "../components/Tooltip";
 
 const Dashboard: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -44,6 +45,9 @@ const Dashboard: NextPage = () => {
   const { status, data: videos } = useFirestoreCollectionData(videosQuery, {
     idField: "id", // this field will be added to the object created from each document
   });
+
+  const [showingSearchResponse, setShowingSearchResponse] = useState(true);
+  const [searchResponse, setSearchResponse] = useState("meow meow meow meow");
 
   console.log({ status, videos });
 
@@ -78,10 +82,37 @@ const Dashboard: NextPage = () => {
 
   const filterSearch = (qry: string): void => {
     console.log("Searching for: ", qry);
-    if (qry.includes("?")) {
-      console.log("This is a context search query.");
+    const data = {
+      uid,
+      query: qry,
+    };
+    if (!qry.includes("?")) {
+      const params = new URLSearchParams(data);
+      const url = `https://backend.vibeo.video/search?${params.toString()}`;
+      fetch(url)
+        .then((response) => response.json())
+        .then((results: { vid: string; timestamps: number }[]) => {
+          console.log(results);
+          setShowingSearchResponse(true);
+          results.forEach(
+            ({ vid, timestamps }: { vid: string; timestamps: number }) => {
+              console.log(`vid: ${vid}, timestamps: ${timestamps}`);
+            }
+          );
+        })
+        .catch((error) => console.error(error));
     } else {
-      console.log("This is a filter search query.");
+      const params = new URLSearchParams(data);
+      const url = `https://backend.vibeo.video/question?${params.toString()}`;
+      fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((result) => console.log(result))
+        .catch((error) => console.error(error));
     }
   };
 
@@ -114,25 +145,29 @@ const Dashboard: NextPage = () => {
             }
           />
         </HStack>
+        <Tooltip isOpen={showingSearchResponse}>{searchResponse}</Tooltip>
         <Wrap overflow={"unset"} spacing={6}>
-          <WrapItem>
-            <Card p={2} w={328}>
-              <Image
-                src={"https://via.placeholder.com/640x360"}
-                alt={"placeholder"}
-                width={"100%"}
-                borderRadius={"md"}
-              />
-              <Text fontSize={"xl"} fontWeight={600} mt={3} mb={0} mx={2}>
-                Schoology
-              </Text>
-              <Text fontSize={"sm"} fontWeight={300} my={2} mx={2}>
-                Here's a summary of what was discussed during the video
-              </Text>
-            </Card>
-          </WrapItem>
+          {videos == null
+            ? status
+            : videos.map((video) => (
+                <WrapItem>
+                  <Card p={2} w={328}>
+                    <Image
+                      src={"https://via.placeholder.com/640x360"}
+                      alt={"placeholder"}
+                      width={"100%"}
+                      borderRadius={"md"}
+                    />
+                    <Text fontSize={"xl"} fontWeight={600} mt={3} mb={0} mx={2}>
+                      {video.name}
+                    </Text>
+                    <Text fontSize={"sm"} fontWeight={300} my={2} mx={2}>
+                      {new Date(video.created.seconds * 1000).toLocaleString()}
+                    </Text>
+                  </Card>
+                </WrapItem>
+              ))}
         </Wrap>
-        <pre>{JSON.stringify(videos, null, 2)}</pre>
       </Box>
       <AddVideoModal open={isOpen} onClose={onClose} uid={uid} />
     </PageLayout>

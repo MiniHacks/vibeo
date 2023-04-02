@@ -34,6 +34,7 @@ const AddVideoModal = ({
       uid,
       url: youtubeLink,
     };
+    console.log(data);
     fetch(url, {
       method: "POST",
       body: JSON.stringify(data),

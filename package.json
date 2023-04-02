@@ -39,5 +39,8 @@
     "husky": "^8.0.0",
     "nodemon": "^2.0.19",
     "prettier": "^2.5.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }
