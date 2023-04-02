@@ -42,7 +42,11 @@ const Footer = (props: FlexProps): JSX.Element => {
             mini
           </Text>
           ,{" "}
-          <Text as={"span"} color={"brand"}>
+          <Text
+            as={"a"}
+            color={"brand"}
+            href={"https://github.com/iCalculated"}
+          >
             sasha
           </Text>
           , and{" "}
