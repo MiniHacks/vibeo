@@ -130,11 +130,12 @@ const Word = ({
 
   useEffect(() => {
     if (isCurrentWord && ref.current) {
-      ref.current.parentElement.parentElement.parentElement.scroll({
+      const current = ref.current as HTMLSpanElement;
+      current?.parentElement?.parentElement?.parentElement?.scroll({
         top:
-          ref.current.parentElement.parentElement.offsetTop -
-          ref.current.parentElement.parentElement.parentElement.parentElement
-            .offsetTop,
+          (current?.parentElement?.parentElement?.offsetTop ?? 0) -
+          (current?.parentElement?.parentElement?.parentElement?.parentElement
+            ?.offsetTop ?? 0),
         behavior: "smooth",
       });
     }
