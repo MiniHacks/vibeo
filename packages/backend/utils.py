@@ -17,6 +17,20 @@ from google.cloud.firestore import DocumentReference
 logger.setLevel("DEBUG")
 
 
+class TranscriptCache:
+    def __init__(self):
+        self.cache = {}
+
+    def get(self, key):
+        return self.cache.get(key)
+
+    def set(self, key, value):
+        self.cache[key] = value
+
+
+transcript_cache = TranscriptCache()
+
+
 def extract_wav_from_mp4(input_mp4: Path, output_wav: Path):
     cmd = f"ffmpeg -i {input_mp4} -vn -acodec pcm_s16le -ar 16000 -ac 1 -loglevel error -y {output_wav}"
     subprocess.run(cmd, shell=True)
@@ -164,11 +178,14 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     doc.update({"progress": random() * 0.1 + 0.8})
 
     logger.info("Upserting transcript to firestore")
-    doc.update({"transcript": transcript.dict()})
-    doc.update({"words": [x.dict() for x in words]})
-    doc.update({"sentences": [x.dict() for x in sentences]})
-    doc.update({"sections": [x.dict() for x in sections]})
-    doc.update({"progress": 1, "done": True})
+    doc.update({"transcript": transcript.dict(), "progress": 1, "done": True})
+    full_doc = {
+        "transcript": transcript.dict(),
+        "words": [x.dict() for x in words],
+        "sentences": [x.dict() for x in sentences],
+        "sections": [x.dict() for x in sections],
+    }
+    transcript_cache.set(vid, full_doc)
     logger.info("Upserted transcript to firestore")
 
     logger.info("Generating vectors")
@@ -205,20 +222,6 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     logger.info("Upserted vectors")
 
     return "lgtm"
-
-
-class TranscriptCache:
-    def __init__(self):
-        self.cache = {}
-
-    def get(self, key):
-        return self.cache.get(key)
-
-    def set(self, key, value):
-        self.cache[key] = value
-
-
-transcript_cache = TranscriptCache()
 
 
 def get_file(vid, transcript_cache=transcript_cache):
