@@ -10,10 +10,11 @@ import {
   ModalContent,
   Divider,
   Flex,
-  Heading,
   Text,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
+import Tooltip from "./Tooltip";
+import Button from "./Button";
 
 export type SearchResult = {
   vid: string;
@@ -36,10 +37,16 @@ export default function SearchBar({
   ...props
 }: SearchBarProps): JSX.Element {
   const [searchText, setSearchText] = useState("");
+  const [showingSearchResponse, setShowingSearchResponse] = useState(false);
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value);
     return onSearch(event.target.value);
   };
+
+  if (searchResponse && searchResponse.answer) {
+    setShowingSearchResponse(true);
+  }
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const videos = [
@@ -125,13 +132,16 @@ export default function SearchBar({
               <Image alt={"magnifying glass search icon"} src={"search.svg"} />
             </InputRightElement>
           </InputGroup>
+
+          <Tooltip isOpen={showingSearchResponse}>
           <Divider my={4} />
-          <Text fontSize={"xl"}>
+          <Text fontWeight="semibold" fontSize={"xl"} mb={2}>
             Quote from some video. Something something we are really cool
             people.
           </Text>
           <Text fontSize={"xl"}>↪ [XX:XX] of Video Title</Text>
-          <Divider my={6} />
+          </Tooltip>
+          <Divider my={4} />
           {videos.map((video, i) => (
             <Flex key={i} my={2} >
               <Image
@@ -146,7 +156,7 @@ export default function SearchBar({
                 <Text fontWeight={"bold"} fontSize={"xl"}>
                   {video.title}
                 </Text>
-                <Text>
+                <Text fontWeight="light">
                   [{video.timestamp}] {video.context}
                 </Text>
               </Flex>
