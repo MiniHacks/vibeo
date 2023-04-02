@@ -7,10 +7,11 @@ from fastapi.logger import logger
 from firebase_admin import firestore
 from pytube import YouTube
 from starlette.responses import FileResponse
+from random import randint
 
 from backend.connections import db
 from backend.constants import ENV_PATH, FILE_DIR
-from backend.models import DownloadRequest, Selection, Context, Highlight
+from backend.models import DownloadRequest, UploadRequest, Selection, Context, Highlight
 from backend.stream import *
 from backend.utils import (
     process_video,
@@ -90,6 +91,13 @@ async def question(query: str, uid: str, vid: Union[str, None] = None):
     response = answer(query, context)
     return {"answer": response, "content": context}
 
+@app.post("/upload")
+async def upload_video(request: UploadRequest, response: Response):
+    print("Starting upload...", request.uid, len(request.file))
+    file_name = request.uid + "_" + randint(0, 213999999) + "_" + request.file.filename
+    with open(os.path.join(FILE_DIR, file_name), "wb") as f:
+        f.write(request.file)
+    return {"fileName": file_name}
 
 @app.post("/download")
 async def download_video(request: DownloadRequest, response: Response):
