@@ -40,7 +40,6 @@ def transcribe_with_vad(
     model: "Whisper",
     audio: str,
     vad_pipeline,
-    verbose: Optional[bool] = None,
     **kwargs,
 ):
     """

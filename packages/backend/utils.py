@@ -7,8 +7,8 @@ import subprocess
 from random import random
 
 from fastapi.logger import logger
-from backend.models import Word, Sentence, Section, Transcript
-from backend.constants import FILE_DIR, WHISPER__MODEL
+from backend.models import Word, Sentence, Section
+from backend.constants import FILE_DIR
 from backend.connections import collection, db
 from backend.transcribe import transcribe_video
 
@@ -109,21 +109,6 @@ def accumulate_sentences_to_sections(
     return sections
 
 
-def transcript_from_sections(sections: List[Section]) -> Transcript:
-    transcript = Transcript(sections=sections)
-    return transcript
-
-
-def transcript_from_srt(file_name: Path) -> Transcript:
-    with open(file_name, "r") as f:
-        srt_content = f.read()
-    words = parse_srt_to_words(srt_content)
-    sentences = accumulate_words_to_sentences(words)
-    sections = accumulate_sentences_to_sections(sentences)
-    transcript = transcript_from_sections(sections)
-    return transcript
-
-
 def convert_to_seconds(timestamp: str) -> float:
     hours, minutes, seconds_ms = timestamp.split(":")
     seconds, ms = seconds_ms.split(",")
@@ -167,21 +152,19 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     logger.info(f"Whispered transcript to {(FILE_DIR / vid).with_suffix('.word.srt')}")
     doc.update({"progress": random() * 0.1 + 0.7})
 
-    logger.info("Creating transcript object")
+    logger.info("Creating transcript objects")
     srt_file = file_name.with_suffix(".word.srt")
     with open(srt_file, "r") as f:
         srt_content = f.read()
     words = parse_srt_to_words(srt_content)
     sentences = accumulate_words_to_sentences(words)
     sections = accumulate_sentences_to_sections(sentences)
-    transcript = transcript_from_sections(sections)
-    logger.info("Created transcript object")
+    logger.info("Created transcript objects")
     doc.update({"progress": random() * 0.1 + 0.8})
 
     logger.info("Upserting transcript to firestore")
-    doc.update({"transcript": transcript.dict(), "progress": 1, "done": True})
+    doc.update({"transcript": sections, "progress": 1, "done": True})
     full_doc = {
-        "transcript": transcript.dict(),
         "words": [x.dict() for x in words],
         "sentences": [x.dict() for x in sentences],
         "sections": [x.dict() for x in sections],
@@ -190,7 +173,6 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     logger.info("Upserted transcript to firestore")
 
     logger.info("Generating vectors")
-    sections = transcript.sections
     sentences = list(chain.from_iterable([section.sentences for section in sections]))
 
     sentence_embeddings = get_embeddings([sentence.content for sentence in sentences])
