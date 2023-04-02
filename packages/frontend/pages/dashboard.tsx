@@ -117,42 +117,6 @@ const Dashboard: NextPage = () => {
     );
   }
 
-  const filterSearch = (qry: string): void => {
-    console.log("Searching for: ", qry);
-    const data = {
-      uid,
-      query: qry,
-    };
-    if (!qry.includes("?")) {
-      const params = new URLSearchParams(data);
-      const url = `https://backend.vibeo.video/search?${params.toString()}`;
-      fetch(url)
-        .then((response) => response.json())
-        .then((results: { vid: string; timestamps: number }[]) => {
-          console.log(results);
-          setShowingSearchResponse(true);
-          results.forEach(
-            ({ vid, timestamps }: { vid: string; timestamps: number }) => {
-              console.log(`vid: ${vid}, timestamps: ${timestamps}`);
-            }
-          );
-        })
-        .catch((error) => console.error(error));
-    } else {
-      const params = new URLSearchParams(data);
-      const url = `https://backend.vibeo.video/question?${params.toString()}`;
-      fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error));
-    }
-  };
-
   // shows tooltip upon question search query
 
   // const showCards = () => {};
