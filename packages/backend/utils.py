@@ -5,10 +5,11 @@ from itertools import chain
 import subprocess
 import logging
 from random import random
+from functools import lru_cache
 
 from backend.models import Word, Sentence, Section, Transcript
 from backend.constants import FILE_DIR, WHISPER__MODEL
-from backend.connections import collection
+from backend.connections import collection, db
 
 import openai
 from google.cloud.firestore import DocumentReference
@@ -202,3 +203,32 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     logger.info("Upserted vectors")
 
     return "lgtm"
+
+
+class TranscriptCache:
+    def __init__(self):
+        self.cache = {}
+
+    def get(self, key):
+        return self.cache.get(key)
+
+    def set(self, key, value):
+        self.cache[key] = value
+
+
+transcript_cache = TranscriptCache()
+
+
+def get_file(vid, transcript_cache=transcript_cache):
+    # Check if the file is already in the local cache
+    doc = transcript_cache.get(vid)
+    if doc is not None:
+        return doc
+
+    doc_ref = db.collection("videos").document(vid)
+    doc = doc_ref.get()
+
+    # Update the local cache with the fetched file
+    transcript_cache.set(vid, doc)
+
+    return doc

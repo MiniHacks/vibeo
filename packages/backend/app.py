@@ -12,7 +12,7 @@ import openai
 
 from backend.models import DownloadRequest
 from backend.stream import *
-from backend.utils import get_embedding, process_video
+from backend.utils import get_embedding, process_video, get_file
 from backend.constants import ENV_PATH, FILE_DIR
 from backend.connections import db, collection
 
@@ -62,8 +62,7 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
     relevant_sentences = []
     for id in sentence_ids:
         vid, _, index = id.split("_")
-        doc_ref = db.collection("videos").document(vid)
-        doc = doc_ref.get()
+        doc = get_file(vid)
 
         if not doc.exists:
             continue
