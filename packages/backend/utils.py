@@ -10,6 +10,7 @@ from fastapi.logger import logger
 from backend.models import Word, Sentence, Section, Transcript
 from backend.constants import FILE_DIR, WHISPER__MODEL
 from backend.connections import collection, db
+from backend.transcribe import transcribe
 
 import openai
 from google.cloud.firestore import DocumentReference
@@ -159,10 +160,10 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     doc.update({"progress": random() * 0.2 + 0.2})
 
     logger.info("Extracting transcript using whisperx")
-    cmd = f"whisperx {wav_name} --hf_token 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 --vad_filter True --model {WHISPER__MODEL} --output_dir {FILE_DIR} --output_format srt-word"
-    result = subprocess.run(cmd, shell=True)
-    if result.returncode != 0:
-        raise Exception(f"Whisperx failed.")
+    try:
+        transcribe(str(wav_name))
+    except Exception as e:
+        raise Exception(f"Whisperx failed: {e}")
     logger.info(f"Whispered transcript to {(FILE_DIR / vid).with_suffix('.word.srt')}")
     doc.update({"progress": random() * 0.1 + 0.7})
 
