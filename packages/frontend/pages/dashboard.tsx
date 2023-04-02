@@ -10,7 +10,7 @@ import {
   WrapItem,
   useDisclosure,
 } from "@chakra-ui/react";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
 import { collection, orderBy, query, where } from "firebase/firestore";
@@ -47,8 +47,34 @@ const Dashboard: NextPage = () => {
     idField: "id", // this field will be added to the object created from each document
   });
 
-  const [showingSearchResponse, setShowingSearchResponse] = useState(true);
-  const [searchResponse, setSearchResponse] = useState("meow meow meow meow");
+  const [searchResponse, setSearchResults] = useState(null);
+
+  const filterSearch = (qry: string): void => {
+    console.log("Searching for: ", qry);
+    const data = {
+      uid,
+      query: qry,
+    };
+    if (!qry.includes("?")) {
+      const params = new URLSearchParams(data);
+      const url = `https://backend.vibeo.video/search?${params.toString()}`;
+      fetch(url)
+        .then((response) => response.json())
+        .then((result) => setSearchResults(result));
+    } else {
+      const params = new URLSearchParams(data);
+      const url = `https://backend.vibeo.video/question?${params.toString()}`;
+      fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((result) => setSearchResults(result));
+    }
+  };
+  const debouncedSearch = useRef(debounce(filterSearch, 400)).current;
 
   console.log({ status, videos });
 
@@ -81,42 +107,6 @@ const Dashboard: NextPage = () => {
     );
   }
 
-  const filterSearch = (qry: string): void => {
-    console.log("Searching for: ", qry);
-    const data = {
-      uid,
-      query: qry,
-    };
-    if (!qry.includes("?")) {
-      const params = new URLSearchParams(data);
-      const url = `https://backend.vibeo.video/search?${params.toString()}`;
-      fetch(url)
-        .then((response) => response.json())
-        .then((results: { vid: string; timestamps: number }[]) => {
-          console.log(results);
-          setShowingSearchResponse(true);
-          results.forEach(
-            ({ vid, timestamps }: { vid: string; timestamps: number }) => {
-              console.log(`vid: ${vid}, timestamps: ${timestamps}`);
-            }
-          );
-        })
-        .catch((error) => console.error(error));
-    } else {
-      const params = new URLSearchParams(data);
-      const url = `https://backend.vibeo.video/question?${params.toString()}`;
-      fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error));
-    }
-  };
-
   // shows tooltip upon question search query
 
   // const showCards = () => {};
@@ -138,7 +128,7 @@ const Dashboard: NextPage = () => {
             Add Video
           </Button>
           <SearchBar
-            onSearch={filterSearch}
+            onSearch={debouncedSearch}
             ml={2}
             py={5}
             placeholder={
@@ -146,7 +136,6 @@ const Dashboard: NextPage = () => {
             }
           />
         </HStack>
-        <Tooltip isOpen={showingSearchResponse}>{searchResponse}</Tooltip>
         <Wrap overflow={"unset"} spacing={6}>
           {videos == null
             ? status
