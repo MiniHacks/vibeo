@@ -210,23 +210,31 @@ const Dashboard: NextPage = () => {
                           fontSize={"xs"}
                         >
                           {video?.progressMessage != null &&
+                            video!.progress != 1 &&
                             video?.progressMessage.toLowerCase()}
                         </Text>
                       </Flex>
-                      {video?.progressMessage != null && (
+                      <Box
+                        bg={
+                          video?.progressMessage != null && video!.progress != 1
+                            ? "#C4C4C4"
+                            : "transparent"
+                        }
+                        h={"2px"}
+                        w={"100%"}
+                        borderRadius={"2px"}
+                      >
                         <Box
-                          bg={"#C4C4C4"}
-                          h={"2px"}
-                          w={"100%"}
-                          borderRadius={"2px"}
-                        >
-                          <Box
-                            bg={"#000000"}
-                            h={"100%"}
-                            w={`${video.progress * 100}%`}
-                          />
-                        </Box>
-                      )}
+                          bg={
+                            video?.progressMessage != null &&
+                            video!.progress != 1
+                              ? "#C4C4C4"
+                              : "#transparent"
+                          }
+                          h={"100%"}
+                          w={`${video.progress * 100}%`}
+                        />
+                      </Box>
                     </Button>
                   </WrapItem>
                 ))}
