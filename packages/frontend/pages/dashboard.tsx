@@ -3,18 +3,17 @@ import {
   Box,
   Heading,
   HStack,
+  Image,
   Spinner,
   Text,
-  Image,
+  useDisclosure,
   Wrap,
   WrapItem,
-  useDisclosure,
 } from "@chakra-ui/react";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
-import { collection, orderBy, query, where } from "firebase/firestore";
-import debounce from "lodash/debounce";
+import { collection, query, where } from "firebase/firestore";
 import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
@@ -22,7 +21,6 @@ import Button from "../components/Button";
 import SearchBar from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
-import Tooltip from "../components/Tooltip";
 
 const Dashboard: NextPage = () => {
   const { authUser, loading } = useAuthUser();
