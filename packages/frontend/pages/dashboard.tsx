@@ -13,7 +13,7 @@ import {
   WrapItem,
   Flex,
 } from "@chakra-ui/react";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
 import { collection, query, where } from "firebase/firestore";
@@ -56,9 +56,9 @@ const Dashboard: NextPage = () => {
   const [videoFilter, setVideoFilter] = useState<string[] | null>(null);
 
   const filterSearch = (qry: string): void => {
-    console.log("Searching for: ", qry);
+    console.log("Searching for: ", qry, "with uid", authUser?.uid.toString());
     const data = {
-      uid,
+      uid: authUser?.uid.toString() || "jack",
       query: qry,
     };
     if (!qry.includes("?")) {
@@ -90,7 +90,8 @@ const Dashboard: NextPage = () => {
         });
     }
   };
-  const debouncedSearch = useRef(debounce(filterSearch, 400)).current;
+
+  const debouncedSearch = useCallback(debounce(filterSearch, 300), []);
 
   console.log({ status, videos });
 
