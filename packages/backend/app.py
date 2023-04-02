@@ -9,10 +9,11 @@ from fastapi.logger import logger
 from firebase_admin import firestore
 from pytube import YouTube
 import openai
+from starlette.responses import FileResponse
 
 from backend.models import DownloadRequest
 from backend.stream import *
-from backend.utils import process_video, get_file, query_vector_db
+from backend.utils import process_video, get_file, query_vector_db, make_thumbnail
 from backend.constants import ENV_PATH, FILE_DIR
 from backend.connections import db
 
@@ -116,6 +117,13 @@ async def download_video(request: DownloadRequest, response: Response):
 
 @app.get("/video/{filename}")
 async def stream_video(request: Request, filename: str):
+    if ".png" in filename:
+        if filename not in os.listdir(FILE_DIR):
+            [vid, time] = filename.split(".")[0].split("_")
+            make_thumbnail(vid, time)
+
+        return FileResponse(os.path.join(FILE_DIR, filename))
+
     video_path = os.path.join(FILE_DIR, filename + ".mp4")
     try:
         return range_requests_response(

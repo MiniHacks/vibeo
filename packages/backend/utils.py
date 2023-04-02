@@ -261,3 +261,9 @@ def query_vector_db(
     except Exception as e:
         logger.error(f"Vector db query failed: {e}")
         return []
+
+
+def make_thumbnail(vid: str, time: str):
+    cmd = f"ffmpeg -ss {time} -i {FILE_DIR}/{vid}.mp4 -vframes 1 {FILE_DIR}/{vid}_{time}.png"
+    result = subprocess.run(cmd, shell=True)
+    return result
