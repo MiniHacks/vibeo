@@ -1,12 +1,31 @@
 vibeo.video {
-    reverse_proxy localhost:3000
+	reverse_proxy localhost:3000
 }
 
 io.vibeo.video {
-    reverse_proxy 160.94.179.150:40350
+	reverse_proxy 160.94.179.150:40350
+
+	header {
+		Access-Control-Allow-Headers *
+		Access-Control-Allow-Methods *
+		Access-Control-Allow-Origin *
+	}
+	@options {
+		method OPTIONS
+	}
+	respond @options 204
 }
 
 backend.vibeo.video {
-    reverse_proxy 160.94.179.150:40349
-}
+	reverse_proxy 160.94.179.150:40349
 
+	header {
+		Access-Control-Allow-Headers *
+		Access-Control-Allow-Methods *
+		Access-Control-Allow-Origin *
+	}
+	@options {
+		method OPTIONS
+	}
+	respond @options 204
+}

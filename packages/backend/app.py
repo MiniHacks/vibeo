@@ -4,7 +4,7 @@ import os
 import threading
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.logger import logger
 from firebase_admin import firestore
 from pytube import YouTube
@@ -60,14 +60,18 @@ async def search(query: str, uid: str, vid: Union[str, None] = None):
 
 
 @app.post("/download")
-async def download_video(request: DownloadRequest):
+async def download_video(request: DownloadRequest, response: Response):
+    print(request.url, request.uid)
+    response.body = {"message": "Download started"}
     try:
         yt = YouTube(request.url)
 
         stream = yt.streams.filter(
             file_extension="mp4",
         ).get_highest_resolution()
-        assert stream is not None
+        if stream is None:
+            print("no stream :(")
+            raise Exception("No stream found")
 
         time, doc = db.collection("videos").add(
             {
@@ -105,7 +109,7 @@ async def download_video(request: DownloadRequest):
         yt.register_on_progress_callback(on_progress)
 
         threading.Thread(target=side_process).start()
-        return {"vid": vid, "success": True}
+        # return {"vid": vid, "success": True}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
