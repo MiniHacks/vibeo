@@ -28,6 +28,24 @@ class Section(BaseModel):
         return " ".join([sentence.content for sentence in self.sentences])
 
 
+class Highlight(BaseModel):
+    text: str
+    start: float
+    end: float
+
+
+class Context(BaseModel):
+    text: str
+    start: float
+    end: float
+
+
+class Selection(BaseModel):
+    highlight: Highlight
+    context: Context
+    vid: str
+
+
 class DownloadRequest(BaseModel):
     url: str
     uid: str
