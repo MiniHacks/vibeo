@@ -142,7 +142,7 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
     return `${minutes.toString()}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const handleSentenceClick = (startTime: number) => {
+  const setVideoTime = (startTime: number) => {
     if (videoRef?.current) {
       videoRef.current.currentTime = startTime;
     }
@@ -150,7 +150,7 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
 
   return (
     <Box w={"100%"}>
-      <Box mt={4}>
+      <Box mt={4} maxH={"90vh"} overflowX={"auto"}>
         {videoData.transcript?.map((section: TranscriptSection) =>
           section.sentences.map((sentence: TranscriptSentence) => {
             return (
@@ -158,7 +158,7 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
                 display={"flex"}
                 alignItems={"baseline"}
                 mt={"10px"}
-                onClick={() => handleSentenceClick(sentence.start)}
+                // onClick={() => handleSentenceClick(sentence.start)}
                 _hover={{ cursor: "pointer" }}
               >
                 <Box
@@ -171,35 +171,21 @@ const Transcript = ({ videoRef, videoData = dummyData }: TranscriptProps) => {
                 >
                   {formatTime(sentence.start)}
                 </Box>
-                <Box display={"flex"}>
+                <Box>
                   {sentence.words.map((word: TranscriptWord, i: number) => {
                     const isCurrentWord =
                       currentTime &&
-                      currentTime >= word.start &&
+                      currentTime >= word.start - 0.2 &&
                       currentTime <= word.end;
-                    const isNextWordHighlighted =
-                      i < sentence.words.length - 1 &&
-                      currentTime &&
-                      currentTime >= sentence.words[i + 1].start &&
-                      currentTime <= sentence.words[i + 1].end;
                     return (
-                      <>
-                        <Text
-                          bgColor={isCurrentWord ? "yellow" : "transparent"}
-                          _hover={{ bgColor: "yellow" }}
-                        >
-                          {word.content}
-                        </Text>
-                        <Text
-                          bgColor={
-                            isCurrentWord && isNextWordHighlighted
-                              ? "yellow"
-                              : "transparent"
-                          }
-                        >
-                          &nbsp;
-                        </Text>
-                      </>
+                      <Text
+                        onClick={() => setVideoTime(word.start)}
+                        as={"span"}
+                        bgColor={isCurrentWord ? "yellow" : "transparent"}
+                        _hover={{ bgColor: "yellow" }}
+                      >
+                        {word.content}{" "}
+                      </Text>
                     );
                   })}
                 </Box>
