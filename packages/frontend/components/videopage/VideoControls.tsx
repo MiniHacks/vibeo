@@ -49,6 +49,7 @@ const VideoControls = ({
   users = defaultUsers,
   href,
   endRecording,
+  isRecording = false,
 }: VideoControlsProps): JSX.Element => {
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -296,9 +297,11 @@ const VideoControls = ({
               <Box bg={"#000000"} h={"100%"} w={`${progress * 100}%`} />
             </Box>
           </Box>
-          <Text w={"12ch"} textAlign={"center"} fontSize={"xs"}>
-            {formattedProgressTime}/{formattedDurationTime}
-          </Text>
+          {!isRecording && (
+            <Text w={"12ch"} textAlign={"center"} fontSize={"xs"}>
+              {formattedProgressTime}/{formattedDurationTime}
+            </Text>
+          )}
         </Box>
       </Box>
     </Box>

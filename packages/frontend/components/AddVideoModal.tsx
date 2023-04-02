@@ -8,6 +8,8 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import React, { useRef, useState } from "react";
+import { nanoid } from "nanoid";
+import { useRouter } from "next/router";
 import Button from "./Button";
 import { CardProps } from "./Card";
 
@@ -20,7 +22,9 @@ const AddVideoModal = ({
   open: boolean;
   onClose: () => void;
 }): JSX.Element => {
+  const router = useRouter();
   const [youtubeLink, setYoutubeLink] = useState("");
+  const [loading, setLoading] = useState(false);
   const inputFile = useRef<HTMLInputElement | null>(null);
 
   const handleYoutubeLinkChange = (
@@ -42,8 +46,10 @@ const AddVideoModal = ({
       fetch(url, {
         method: "POST",
         body: formData,
+      }).then(() => {
+        setLoading(false);
       });
-      onClose();
+      // onClose();
     }
   };
 
@@ -64,6 +70,7 @@ const AddVideoModal = ({
       });
       onClose();
     } else {
+      setLoading(true);
       openFilePicker();
     }
   };
@@ -84,9 +91,17 @@ const AddVideoModal = ({
       <ModalContent p={8} {...CardProps}>
         <VStack spacing={8}>
           <HStack spacing={4}>
-            <Button onClick={uploadYoutube}>Upload</Button>
+            <Button onClick={uploadYoutube} isLoading={loading}>
+              Upload
+            </Button>
             <Divider orientation={"vertical"} />
-            <Button onClick={onClose}>Record</Button>
+            <Button
+              onClick={() => {
+                router.push(`/v/${nanoid()}?recording=true`);
+              }}
+            >
+              Record
+            </Button>
           </HStack>
           <Input
             placeholder={"Youtube Link"}

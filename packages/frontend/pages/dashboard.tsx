@@ -18,6 +18,7 @@ import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
 import { collection, query, where } from "firebase/firestore";
 import debounce from "lodash/debounce";
+import { nanoid } from "nanoid";
 import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";

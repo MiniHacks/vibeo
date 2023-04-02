@@ -60,10 +60,12 @@ const Vid: NextPage = () => {
   const [color, setColor] = useState<string>("red");
   const voidFunc = () => {};
   const [undo, setUndo] = useState<() => void>(voidFunc);
-  const [isRecording, setRecording] = useState(true);
-  const [isAudioOnly, setAudioOnly] = useState(true);
-  const database = useDatabase();
   const router = useRouter();
+  const { recording } = router.query;
+  console.log("recording", !!recording);
+  const isRecording = !!recording;
+  const isAudioOnly = !!recording;
+  const database = useDatabase();
   const vid = router.query.vid as string;
   const { status: presenceStatus, data: presenceData } = useDatabaseObjectData(
     ref(database, `videos/${vid}/`),
