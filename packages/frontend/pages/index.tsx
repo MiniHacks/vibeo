@@ -75,13 +75,20 @@ const Home: NextPage = () => {
               p={2}
               position={"absolute"}
               display={["none", null, "block"]}
+              w={"439px"}
+              h={"257px"}
+              textAlign={"center"}
+              fontSize={"3xl"}
             >
-              <Image
-                src={"https://via.placeholder.com/439x257"}
-                alt={"placeholder"}
-                width={"100%"}
-                borderRadius={"md"}
-              />
+              <Box
+                display={"flex"}
+                flexDirection={"column"}
+                justifyContent={"center"}
+                alignItems={"center"}
+                h={"100%"}
+              >
+                Collaborate with your friends!
+              </Box>
             </Card>
             <Card
               left={824}
@@ -89,13 +96,20 @@ const Home: NextPage = () => {
               p={2}
               position={"absolute"}
               display={["none", null, "block"]}
+              w={"439px"}
+              h={"257px"}
+              textAlign={"center"}
+              fontSize={"3xl"}
             >
-              <Image
-                src={"https://via.placeholder.com/439x257"}
-                alt={"placeholder"}
-                width={"100%"}
-                borderRadius={"md"}
-              />
+              <Box
+                display={"flex"}
+                flexDirection={"column"}
+                alignItems={"center"}
+                justifyContent={"center"}
+                h={"100%"}
+              >
+                Answer questions about your content.
+              </Box>
             </Card>
           </Parallax>
         </Box>
