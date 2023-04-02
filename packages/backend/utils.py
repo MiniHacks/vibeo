@@ -164,7 +164,7 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
 
     logger.info("Upserting transcript to firestore")
     doc.update(
-        {"transcript": [x.dict() for x in sections], "progress": 1, "done": True}
+        {"transcript": [x.dict() for x in sections], "progress": 1, "done": True, "notes": []}
     )
     full_doc = {
         "words": [x.dict() for x in words],
