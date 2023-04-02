@@ -43,10 +43,6 @@ export default function SearchBar({
     return onSearch(event.target.value);
   };
 
-  if (searchResponse && searchResponse.answer) {
-    setShowingSearchResponse(true);
-  }
-
   const { isOpen, onOpen, onClose } = useDisclosure();
   const videos = [
     {
