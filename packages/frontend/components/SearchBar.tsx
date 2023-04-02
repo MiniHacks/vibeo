@@ -195,8 +195,9 @@ export default function SearchBar({
             return (
               <Flex key={i} my={2}>
                 <Image
-                  fill={"co"}
-                  w={"20%"}
+                  fill={"cover"}
+                  w={'128px'}
+                  h={'72px'}
                   src={`https://backend.vibeo.video/video/${video.id}_0.png`}
                   borderRadius={"md"}
                   objectFit={"cover"}
