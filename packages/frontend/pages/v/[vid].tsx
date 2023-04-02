@@ -312,7 +312,12 @@ const Vid: NextPage = () => {
             >
               <NewNote addNote={onAddNote} />
               {!isAudioOnly && (
-                <Flex direction={"column"} justify={"center"} ml={5}>
+                <Flex
+                  direction={"column"}
+                  justify={"center"}
+                  ml={5}
+                  display={HIDER}
+                >
                   <CanvasToolbar onSetColor={onSetColor} onSave={onSave} />
                 </Flex>
               )}
