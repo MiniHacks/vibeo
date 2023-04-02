@@ -5,7 +5,6 @@ from pathlib import Path
 from itertools import chain
 import subprocess
 from random import random
-import logging
 
 from fastapi.logger import logger
 from backend.models import Word, Sentence, Section, Transcript
@@ -15,7 +14,7 @@ from backend.connections import collection, db
 import openai
 from google.cloud.firestore import DocumentReference
 
-logger.setLevel(logging.DEBUG)
+logger.setLevel("DEBUG")
 
 
 def extract_wav_from_mp4(input_mp4: Path, output_wav: Path):

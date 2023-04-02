@@ -16,7 +16,7 @@ from backend.utils import process_video, get_file, query_vector_db
 from backend.constants import ENV_PATH, FILE_DIR
 from backend.connections import db
 
-logger.setLevel(logging.DEBUG)
+logger.setLevel("DEBUG")
 
 logger.info(f"Loading environment variables from {ENV_PATH}")
 load_dotenv(dotenv_path=ENV_PATH)
