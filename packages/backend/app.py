@@ -117,6 +117,10 @@ async def download_video(request: DownloadRequest, response: Response):
 @app.get("/video/{filename}")
 async def stream_video(request: Request, filename: str):
     video_path = os.path.join(FILE_DIR, filename + ".mp4")
-    return range_requests_response(
-        request, file_path=video_path, content_type="video/mp4"
-    )
+    try:
+        return range_requests_response(
+            request, file_path=video_path, content_type="video/mp4"
+        )
+    except Exception as e:
+        return {"error": str(e)}
+
