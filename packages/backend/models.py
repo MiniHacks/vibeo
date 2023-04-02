@@ -51,6 +51,12 @@ class DownloadRequest(BaseModel):
     url: str
     uid: str
 
+
 class UploadRequest(BaseModel):
     file: UploadFile = File(...)
     uid: str
+
+
+class StreamRequest(BaseModel):
+    context: List[Selection]
+    query: str
