@@ -59,7 +59,11 @@ const Dashboard: NextPage = () => {
       const url = `https://backend.vibeo.video/search?${params.toString()}`;
       fetch(url)
         .then((response) => response.json())
-        .then((result) => setSearchResults(result));
+        .then((result) => {
+          console.log("search");
+          console.log(result);
+          setSearchResults(result);
+        });
     } else {
       const params = new URLSearchParams(data);
       const url = `https://backend.vibeo.video/question?${params.toString()}`;
@@ -70,7 +74,11 @@ const Dashboard: NextPage = () => {
         },
       })
         .then((response) => response.json())
-        .then((result) => setSearchResults(result));
+        .then((result) => {
+          console.log("question");
+          console.log(result);
+          setSearchResults(result);
+        });
     }
   };
   const debouncedSearch = useRef(debounce(filterSearch, 400)).current;
@@ -124,6 +132,7 @@ const Dashboard: NextPage = () => {
           </Button>
           <SearchBar
             onSearch={debouncedSearch}
+            searchResponse={searchResponse}
             ml={2}
             py={5}
             placeholder={

@@ -11,16 +11,28 @@ import {
   Divider,
   Flex,
   Heading,
-  Text
+  Text,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
 
+export type SearchResult = {
+  vid: number;
+  timestamp: number;
+};
+
+export type SearchResponse = {
+  answer: string | null;
+  moments: SearchResult[];
+};
+
 export type SearchBarProps = {
   onSearch: (query: string) => void;
+  searchResponse?: SearchResponse | null;
 } & BoxProps;
 
 export default function SearchBar({
   onSearch,
+  searchResponse,
   ...props
 }: SearchBarProps): JSX.Element {
   const [searchText, setSearchText] = useState("");
@@ -99,9 +111,11 @@ export default function SearchBar({
               alt={"placeholder"}
               borderRadius={"md"}
             />
-            <Flex direction="column">
+            <Flex direction={"column"}>
               <Text>Video Title</Text>
-              <Text>Insert quote or context of where the searched term appears here.</Text>
+              <Text>
+                Insert quote or context of where the searched term appears here.
+              </Text>
             </Flex>
           </Flex>
         </ModalContent>
