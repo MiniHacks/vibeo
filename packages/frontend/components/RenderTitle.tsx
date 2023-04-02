@@ -2,7 +2,7 @@ import { Box, Text } from "@chakra-ui/react";
 import React from "react";
 
 const RenderTitle = ({ title }: { title: string }): JSX.Element => {
-  const splitters = /:|\|/;
+  const splitters = /:|\||-/;
   const rendered = title.split(splitters).map((word, index) => {
     if (index < 1)
       return (
@@ -34,7 +34,7 @@ const RenderTitle = ({ title }: { title: string }): JSX.Element => {
     );
   });
   return (
-    <Box mb={3} mx={2} textOverflow={"ellipsis"} overflow={"hidden"}>
+    <Box mb={2} mt={1} mx={2} textOverflow={"ellipsis"} overflow={"hidden"}>
       {rendered}
     </Box>
   );
