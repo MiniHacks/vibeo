@@ -3,9 +3,10 @@ import re
 from pathlib import Path
 from itertools import chain
 import subprocess
-import logging
 from random import random
+import logging
 
+from fastapi.logger import logger
 from backend.models import Word, Sentence, Section, Transcript
 from backend.constants import FILE_DIR, WHISPER__MODEL
 from backend.connections import collection, db
@@ -13,7 +14,6 @@ from backend.connections import collection, db
 import openai
 from google.cloud.firestore import DocumentReference
 
-logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 

@@ -5,10 +5,10 @@ import threading
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.logger import logger
 from firebase_admin import firestore
 from pytube import YouTube
 import openai
-
 
 from backend.models import DownloadRequest
 from backend.stream import *
@@ -16,9 +16,7 @@ from backend.utils import get_embedding, process_video, get_file, query_vector_d
 from backend.constants import ENV_PATH, FILE_DIR
 from backend.connections import db
 
-logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
 
 logger.info(f"Loading environment variables from {ENV_PATH}")
 load_dotenv(dotenv_path=ENV_PATH)
