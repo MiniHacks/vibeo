@@ -124,6 +124,47 @@ export default function SearchBar({
   //   return "test";
   // };
 
+  const formatTags = (msg: string): any[] => {
+    if (!msg || !searchResults) return [];
+    const acc = [];
+    for (let i = 0; i < msg.length; i++) {
+      if (msg[i] === "[") {
+        const tag = msg.slice(i, msg.indexOf("]", i) + 1);
+        console.log(tag);
+        const tagNum = tag.slice(1, tag.length - 1);
+        const video = videos.find(
+          (video) => video.id === searchResults[+tagNum - 1].vid
+        );
+        const time = video?.data().time;
+        const id = video?.id;
+        const link = `/v/${id}?t=${+time}`;
+        const tagLink = (
+          <Tag
+            colorScheme={"blue"}
+            p={1}
+            mb={-2}
+            display={"inline-block"}
+            _hover={{
+              cursor: "pointer",
+              bg: "blue.200",
+            }}
+            onClick={() => {
+              router.push(link);
+            }}
+          >
+            [{tagNum}]
+          </Tag>
+        );
+        acc.push(tagLink);
+        i = msg.indexOf("]", i);
+      } else {
+        console.log(msg[i]);
+        acc.push(<span>{msg[i]}</span>);
+      }
+    }
+    return acc;
+  };
+
   return (
     <>
       <InputGroup onClick={onOpen}>
@@ -180,8 +221,8 @@ export default function SearchBar({
 
           <Collapse in={showingSearchResponse} animateOpacity>
             <Divider my={4} />
-            <Text fontWeight={"medium"} fontSize={"xl"} mb={2}>
-              {/* {formatTags(questionResult?.answer?.message.content)} */}
+            <Text fontWeight={400} fontSize={"md"} mb={2}>
+              {formatTags(questionResult?.answer?.message.content)}
             </Text>
           </Collapse>
           {((searchResults != null && searchResults.length > 0) ||
@@ -210,17 +251,17 @@ export default function SearchBar({
                   fill={"cover"}
                   w={"128px"}
                   h={"72px"}
-                  src={`https://backend.vibeo.video/video/${video.id}_0.png`}
+                  src={`https://backend.vibeo.video/video/${video?.id}_0.png`}
                   borderRadius={"md"}
                   objectFit={"cover"}
                 />
                 <Flex direction={"column"} ml={4}>
-                  <Text fontWeight={500} fontSize={"xl"}>
-                    {video.name}
+                  <Text fontWeight={400} fontSize={"xl"}>
+                    {video?.name}
                   </Text>
                   <Text fontWeight={300} fontSize={"sm"}>
                     <Badge mr={2}>
-                      {formatTime(result.context.start, video.id)}
+                      {formatTime(result.context.start, video?.id)}
                     </Badge>
                     {highlightText(result.context.text, result.highlight.text)}
                   </Text>
