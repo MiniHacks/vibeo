@@ -4,21 +4,11 @@ from typing import Union, Optional
 import numpy as np
 import torch
 import ffmpeg
-from whisper.tokenizer import LANGUAGES, TO_LANGUAGE_CODE
 from whisper.audio import SAMPLE_RATE
-from whisper.utils import (
-    optional_float,
-    optional_int,
-    str2bool,
-)
 from whisperx.alignment import load_align_model, align
 from whisperx.asr import transcribe
-from whisperx.diarize import DiarizationPipeline, assign_word_speakers
 from whisperx.utils import get_writer
-from whisperx.vad import load_vad_model
-from pyannote.audio import Pipeline
-from pyannote.audio import Model, Pipeline
-from whisper import available_models
+from whisperx.vad import load_vad_model, merge_chunks
 from whisper.model import Whisper
 import numpy as np
 import torch
@@ -40,11 +30,13 @@ def transcribe_with_vad(
     model: "Whisper",
     audio: str,
     vad_pipeline,
+    doc,
     **kwargs,
 ):
     """
     Transcribe per VAD segment
     """
+    verbose = kwargs.get("verbose", False)
 
     vad_segments = vad_pipeline(audio)
 
@@ -62,7 +54,8 @@ def transcribe_with_vad(
         return output
 
     print(">>Performing transcription...")
-    for sdx, seg_t in tqdm.tqdm(enumerate(vad_segments)):
+    for sdx, seg_t in enumerate(vad_segments):
+        doc.update({"progress": 0.1 + sdx / len(vad_segments) * 0.8})
         if verbose:
             print(
                 f"~~ Transcribing VAD chunk: ({format_timestamp(seg_t['start'])} --> {format_timestamp(seg_t['end'])}) ~~"
@@ -77,7 +70,7 @@ def transcribe_with_vad(
         local_mel = log_mel_spectrogram(seg_audio, padding=N_SAMPLES)
         # need to pad
 
-        result = transcribe(model, audio, mel=local_mel, verbose=verbose, **kwargs)
+        result = transcribe(model, audio, mel=local_mel, **kwargs)
         seg_t["text"] = result["text"]
         output["segments"].append(
             {

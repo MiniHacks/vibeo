@@ -150,7 +150,7 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     except Exception as e:
         raise Exception(f"Whisperx failed: {e}")
     logger.info(f"Whispered transcript to {(FILE_DIR / vid).with_suffix('.word.srt')}")
-    doc.update({"progress": random() * 0.1 + 0.7})
+    doc.update({"progress": random() * 0.1 + 0.8})
 
     logger.info("Creating transcript objects")
     srt_file = file_name.with_suffix(".word.srt")
@@ -160,10 +160,12 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     sentences = accumulate_words_to_sentences(words)
     sections = accumulate_sentences_to_sections(sentences)
     logger.info("Created transcript objects")
-    doc.update({"progress": random() * 0.1 + 0.8})
+    doc.update({"progress": random() * 0.1 + 0.9})
 
     logger.info("Upserting transcript to firestore")
-    doc.update({"transcript": sections, "progress": 1, "done": True})
+    doc.update(
+        {"transcript": [x.dict() for x in sections], "progress": 1, "done": True}
+    )
     full_doc = {
         "words": [x.dict() for x in words],
         "sentences": [x.dict() for x in sentences],
@@ -189,7 +191,7 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
     section_ids = [f"{vid}_section_{i}" for i in range(len(sections))]
 
     logger.info("Upserting vectors")
-    print(collection.count())
+    print(f"There are {collection.count()} vectors in the db before insertion")
     collection.add(
         embeddings=sentence_embeddings,
         metadatas=sentence_metadatas,  # type: ignore
@@ -202,6 +204,7 @@ def process_video(vid: str, uid: str, doc: DocumentReference):
         ids=section_ids,
     )
     print(collection.count())
+    print(f"There are {collection.count()} vectors in the db after insertion")
     logger.info("Upserted vectors")
 
     return "lgtm"
@@ -229,6 +232,7 @@ def query_vector_db(
     count: int = 5,
     collection=collection,
 ):
+    print(f"There are {collection.count()} vectors in the db before searching")
     query_embedding = get_embedding(query)
 
     try:
