@@ -30,6 +30,7 @@ import {
   set,
 } from "firebase/database";
 
+import dynamic from "next/dynamic";
 import PageLayout from "../../components/Layout/PageLayout";
 import useAuthUser from "../../lib/hooks/useAuthUser";
 import Card from "../../components/Card";
@@ -43,6 +44,11 @@ import NewNote from "../../components/videopage/NewNote";
 import Notes, { Note } from "../../components/videopage/Notes";
 import Footer from "../../components/Layout/Footer";
 import { stringToColor } from "../../lib/generic/toInt";
+
+const RecordingTranscript = dynamic(
+  () => import("../../components/RecordingTranscript"),
+  { ssr: false }
+);
 
 const Vid: NextPage = () => {
   const { authUser, loading } = useAuthUser();
@@ -224,7 +230,9 @@ const Vid: NextPage = () => {
     </>
   );
 
-  const TRANSCRIPT = (
+  const TRANSCRIPT = isRecording ? (
+    <RecordingTranscript />
+  ) : (
     <>
       <Text fontSize={"xl"} fontWeight={"bold"}>
         {video?.done
