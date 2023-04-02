@@ -134,7 +134,7 @@ export default function SearchBar({
 
           <Collapse in={showingSearchResponse} animateOpacity>
             <Divider my={4} />
-            <Text fontWeight="semibold" fontSize={"xl"} mb={2}>
+            <Text fontWeight={"semibold"} fontSize={"xl"} mb={2}>
               Quote from some video. Something something we are really cool
               people.
             </Text>
@@ -142,7 +142,7 @@ export default function SearchBar({
           </Collapse>
           <Divider my={4} />
           {videos.map((video, i) => (
-            <Flex key={i} my={2} >
+            <Flex key={i} my={2}>
               <Image
                 fill={"co"}
                 w={"20%"}
@@ -155,7 +155,7 @@ export default function SearchBar({
                 <Text fontWeight={"bold"} fontSize={"xl"}>
                   {video.title}
                 </Text>
-                <Text fontWeight="light">
+                <Text fontWeight={"light"}>
                   [{video.timestamp}] {video.context}
                 </Text>
               </Flex>

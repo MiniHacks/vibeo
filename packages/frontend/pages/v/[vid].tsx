@@ -1,9 +1,21 @@
 import type { NextPage } from "next";
-import { Box, Flex, HStack, Spinner, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  HStack,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  Spinner,
+  Text,
+  useDisclosure,
+  Image,
+} from "@chakra-ui/react";
 import React, { useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth, useFirestore, useFirestoreDocData } from "reactfire";
 import { doc } from "firebase/firestore";
+import QRCode from "qrcode";
 import PageLayout from "../../components/Layout/PageLayout";
 import useAuthUser from "../../lib/hooks/useAuthUser";
 import Card from "../../components/Card";
@@ -39,8 +51,21 @@ const Vid: NextPage = () => {
   const { status, data: video } = useFirestoreDocData(videoDocRef, {
     idField: "id",
   });
+  const { isOpen, onOpen, onClose } = useDisclosure();
   console.log(video);
-  const share = () => {};
+
+  const [shareQr, setShareQr] = useState("");
+
+  const share = () => {
+    QRCode.toDataURL(location.href)
+      .then((url) => {
+        setShareQr(url);
+        onOpen();
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
   const onSetColor = (c: string) => {
     console.log(c);
@@ -157,6 +182,22 @@ const Vid: NextPage = () => {
           </Card>
         </HStack>
       </Box>
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent
+          bg={"white"}
+          p={4}
+          border={"3px solid black !important"}
+          boxShadow={"-5px 7px 0px black !important"}
+          borderRadius={"lg"}
+        >
+          <Text fontSize={"xl"} textAlign={"center"}>
+            Scan the QR code for the link
+          </Text>
+          <Image src={shareQr} />
+        </ModalContent>
+      </Modal>
       <Footer mt={10} />
     </PageLayout>
   );
