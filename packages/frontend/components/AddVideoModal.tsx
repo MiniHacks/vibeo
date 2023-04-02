@@ -16,6 +16,7 @@ const AddVideoModal = ({
   open,
   onClose,
 }: {
+  uid: string;
   open: boolean;
   onClose: () => void;
 }): JSX.Element => {

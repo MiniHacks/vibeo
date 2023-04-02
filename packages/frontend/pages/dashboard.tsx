@@ -3,17 +3,17 @@ import {
   Box,
   Heading,
   HStack,
+  Image,
   Spinner,
   Text,
-  Image,
+  useDisclosure,
   Wrap,
   WrapItem,
-  useDisclosure,
 } from "@chakra-ui/react";
 import React from "react";
 import { useAuth, useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useRouter } from "next/router";
-import { collection, orderBy, query, where } from "firebase/firestore";
+import { collection, query, where } from "firebase/firestore";
 import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
