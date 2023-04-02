@@ -91,7 +91,7 @@ const Dashboard: NextPage = () => {
     }
   };
 
-  const debouncedSearch = useCallback(debounce(filterSearch, 300), []);
+  const debouncedSearch = useCallback(debounce(filterSearch, 300), [uid]);
 
   console.log({ status, videos });
 
