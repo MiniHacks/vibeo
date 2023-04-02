@@ -12,9 +12,12 @@ import {
   Flex,
   Text,
   Collapse,
+  Tag,
+  Badge,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
 import { DocumentData } from "firebase/firestore";
+import { useRouter } from "next/router";
 
 export type Context = {
   text: string;
@@ -47,6 +50,7 @@ export default function SearchBar({
   videos,
   ...props
 }: SearchBarProps): JSX.Element {
+  const router = useRouter();
   const [searchText, setSearchText] = useState("");
   const [showingSearchResponse, setShowingSearchResponse] = useState(false);
 
@@ -188,7 +192,20 @@ export default function SearchBar({
             const video = videos.find((ele) => ele.id === result.vid);
 
             return (
-              <Flex key={i} my={2}>
+              <Flex
+                key={i}
+                my={0}
+                _hover={{
+                  bg: "gray.200",
+                }}
+                py={6}
+                px={4}
+                borderRadius={"md"}
+                cursor={"pointer"}
+                onClick={() => {
+                  router.push(`/v/${result.vid}?t=${result.context.start}`);
+                }}
+              >
                 <Image
                   fill={"cover"}
                   w={"128px"}
@@ -198,11 +215,13 @@ export default function SearchBar({
                   objectFit={"cover"}
                 />
                 <Flex direction={"column"} ml={4}>
-                  <Text fontWeight={"bold"} fontSize={"xl"}>
-                    {i + 1}. {video.name}
+                  <Text fontWeight={500} fontSize={"xl"}>
+                    {video.name}
                   </Text>
-                  <Text>
-                    [{formatTime(result.context.start, video.id)}]{" "}
+                  <Text fontWeight={300} fontSize={"sm"}>
+                    <Badge mr={2}>
+                      {formatTime(result.context.start, video.id)}
+                    </Badge>
                     {highlightText(result.context.text, result.highlight.text)}
                   </Text>
                 </Flex>

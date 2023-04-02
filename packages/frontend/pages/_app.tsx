@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { AppProps } from "next/app";
+import App, { AppContext, AppProps } from "next/app";
 import { ChakraProvider } from "@chakra-ui/react";
 import { initializeApp } from "firebase/app";
 import {
@@ -70,5 +70,14 @@ function MyApp(props: AppProps): JSX.Element {
     </FirebaseAppProvider>
   );
 }
+
+// 🚨 this disables all server-side rendering for this app o.o
+//      this is probably fine as the data should theoretically all client-side
+//      or this is an electron app -- so we don't need SSR anyway.
+MyApp.getInitialProps = async (appContext) => {
+  const appProps = await App.getInitialProps(appContext);
+
+  return { ...appProps };
+};
 
 export default MyApp;

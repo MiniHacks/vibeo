@@ -182,13 +182,13 @@ const Dashboard: NextPage = () => {
                       _hover={{ bg: "gray.100" }}
                       _active={{ bg: "gray.200" }}
                       onClick={() => {
-                        router.push(`/v/${video.id}`);
+                        router.push(`/v/${video?.id}`);
                       }}
                       height={"100%"}
                     >
                       {video?.done && (
                         <Image
-                          src={`https://backend.vibeo.video/video/${video.id}_5.png`}
+                          src={`https://backend.vibeo.video/video/${video?.id}_5.png`}
                           alt={"placeholder"}
                           width={"100%"}
                           borderRadius={"md"}
@@ -204,7 +204,7 @@ const Dashboard: NextPage = () => {
                         color={"gray.500"}
                       >
                         {formatRelative(
-                          new Date(video.created.seconds * 1000),
+                          new Date(video?.created.seconds * 1000),
                           new Date()
                         )}
                       </Text>

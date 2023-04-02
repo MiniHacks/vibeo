@@ -137,7 +137,8 @@ const Vid: NextPage = () => {
     }
   }, [videoRef.current]);
   const share = () => {
-    QRCode.toDataURL(location.href)
+    if (typeof window === "undefined") return;
+    QRCode.toDataURL(window.location.href)
       .then((url) => {
         setShareQr(url);
         onOpen();

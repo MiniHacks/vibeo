@@ -125,7 +125,7 @@ const Word = ({
   setVideoTime: (time: number) => void;
 }): JSX.Element => {
   const isCurrentWord =
-    currentTime && currentTime >= word.start - 0.2 && currentTime <= word.end;
+    currentTime && currentTime >= word.start - 0.4 && currentTime <= word.end;
 
   const ref = useRef(null);
 
