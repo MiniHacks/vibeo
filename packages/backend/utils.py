@@ -58,7 +58,12 @@ def accumulate_words_to_sentences(
 
     for word in words:
         sentence_words.append(word)
-        if word.content[-1] in end_chars:
+        if word.content[-1] in end_chars and word.content not in [
+            "Mr.",
+            "Mrs.",
+            "Dr.",
+            "Ms.",
+        ]:
             sentence = Sentence(
                 start=sentence_words[0].start,
                 end=sentence_words[-1].end,
