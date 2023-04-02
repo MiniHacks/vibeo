@@ -54,8 +54,8 @@ const Vid: NextPage = () => {
   const [color, setColor] = useState<string>("red");
   const voidFunc = () => {};
   const [undo, setUndo] = useState<() => void>(voidFunc);
-  const [isRecording, setRecording] = useState(false);
-  const [isAudioOnly, setAudioOnly] = useState(false);
+  const [isRecording, setRecording] = useState(true);
+  const [isAudioOnly, setAudioOnly] = useState(true);
   const database = useDatabase();
   const router = useRouter();
   const vid = router.query.vid as string;
@@ -220,17 +220,17 @@ const Vid: NextPage = () => {
       <Text fontSize={"xl"} fontWeight={"bold"}>
         Notes
       </Text>
-      <Notes vid={vid} videoRef={videoRef} notes={video.notes || []} />
+      <Notes vid={vid} videoRef={videoRef} notes={video?.notes || []} />
     </>
   );
 
   const TRANSCRIPT = (
     <>
       <Text fontSize={"xl"} fontWeight={"bold"}>
-        {video.done
+        {video?.done
           ? "Transcript"
-          : `${video.processingMessage}...${
-              Math.round(video.progress * 1000) / 10
+          : `${video?.processingMessage ?? ""}...${
+              Math.round((video?.progress ?? 0) * 1000) / 10
             }%`}
       </Text>
       <Transcript videoRef={videoRef} videoData={video as VideoData} />
@@ -239,7 +239,9 @@ const Vid: NextPage = () => {
 
   return (
     <PageLayout
-      title={`${video.name} | vibeo - your personal video repository`}
+      title={`${
+        video?.name ?? "Recording..."
+      } | vibeo - your personal video repository`}
     >
       <Box
         minHeight={"100vh"}
@@ -251,8 +253,8 @@ const Vid: NextPage = () => {
         <Flex mb={10}>
           <Box flexGrow={1}>
             <VideoControls
-              videoTitle={video.name}
-              href={video.youtube}
+              videoTitle={video?.name}
+              href={video?.youtube}
               videoRef={videoRef}
               users={presence}
               endRecording={() =>
@@ -273,28 +275,33 @@ const Vid: NextPage = () => {
         >
           <Flex direction={"column"} justify={"start"} maxW={"100%"}>
             {!isAudioOnly && (
-              <>
-                <VideoPlayer
-                  source={`https://backend.vibeo.video/video/${vid}`}
-                  ref={videoRef}
-                  color={color}
-                  setUndoFunction={(func) => {
-                    setUndo(func);
-                  }}
-                />
-                <Flex direction={"row"} justify={"space-between"} mt={4}>
-                  <NewNote addNote={onAddNote} />
-                  <Flex direction={"column"} justify={"center"} ml={5}>
-                    <CanvasToolbar onSetColor={onSetColor} onSave={onSave} />
-                  </Flex>
-                </Flex>
-              </>
+              <VideoPlayer
+                source={`https://backend.vibeo.video/video/${vid}`}
+                ref={videoRef}
+                color={color}
+                setUndoFunction={(func) => {
+                  setUndo(func);
+                }}
+              />
             )}
+            <Flex
+              direction={"row"}
+              justify={"space-between"}
+              mt={isAudioOnly ? 0 : 4}
+              height={14}
+            >
+              <NewNote addNote={onAddNote} />
+              {!isAudioOnly && (
+                <Flex direction={"column"} justify={"center"} ml={5}>
+                  <CanvasToolbar onSetColor={onSetColor} onSave={onSave} />
+                </Flex>
+              )}
+            </Flex>
             <Card
               flexGrow={1}
               px={8}
               py={4}
-              mt={!isAudioOnly ? 8 : 0}
+              mt={isAudioOnly ? 4 : 8}
               h={0}
               display={"flex"}
               flexDirection={"column"}

@@ -1,19 +1,10 @@
 import os
-from typing import Union, Optional
+from typing import Union
 
+import ffmpeg
 import numpy as np
 import torch
-import ffmpeg
-from whisper.audio import SAMPLE_RATE
-from whisperx.alignment import load_align_model, align
-from whisperx.asr import transcribe
-from whisperx.utils import get_writer
-from whisperx.vad import load_vad_model, merge_chunks
-from whisper.model import Whisper
-import numpy as np
-import torch
-import tqdm
-import ffmpeg
+from whisper import load_model
 from whisper.audio import (
     N_SAMPLES,
     SAMPLE_RATE,
@@ -21,17 +12,26 @@ from whisper.audio import (
     log_mel_spectrogram,
     load_audio,
 )
+from whisper.model import Whisper
 from whisper.utils import format_timestamp
+from whisperx.alignment import load_align_model, align
+from whisperx.asr import transcribe
+from whisperx.utils import get_writer
+from whisperx.vad import load_vad_model, merge_chunks
 
 from backend.constants import WHISPER__MODEL, FILE_DIR
 
+models = {}
+models["tiny.en"] = load_model("tiny.en")
+models["medium.en"] = load_model("medium.en")
+
 
 def transcribe_with_vad(
-    model: "Whisper",
-    audio: str,
-    vad_pipeline,
-    doc,
-    **kwargs,
+        model: "Whisper",
+        audio: str,
+        vad_pipeline,
+        doc,
+        **kwargs,
 ):
     """
     Transcribe per VAD segment
@@ -150,9 +150,10 @@ def transcribe_video(audio_path: str, doc):
     if (threads := args.pop("threads")) > 0:
         torch.set_num_threads(threads)
 
-    from whisper import load_model
+    if model_name not in models:
+        models[model_name] = load_model(model_name, device=device, download_root=model_dir)
 
-    model = load_model(model_name, device=device, download_root=model_dir)
+    model = models[model_name]
 
     writer = get_writer(output_format, output_dir)
     input_audio_path = audio_path
@@ -202,3 +203,15 @@ def transcribe_video(audio_path: str, doc):
     # cleanup
     if input_audio_path != audio_path:
         os.remove(input_audio_path)
+
+
+def tiny_transcribe(path):
+    model = models["tiny.en"]
+    result = model.transcribe(path, language="en")
+    return result
+
+
+def med_transcribe(path):
+    model = models["med.en"]
+    result = model.transcribe(path, language="en")
+    return result

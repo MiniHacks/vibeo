@@ -8,3 +8,4 @@ pytube
 python-dotenv
 chromadb
 openai[embeddings]
+ffmpeg==1.4
