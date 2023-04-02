@@ -6,6 +6,7 @@ import {
   BoxProps,
   useDisclosure,
   Modal,
+  Center,
   ModalOverlay,
   ModalContent,
   Divider,
@@ -14,10 +15,12 @@ import {
   Collapse,
   Tag,
   Badge,
+  Spinner,
 } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
 import { DocumentData } from "firebase/firestore";
 import { useRouter } from "next/router";
+import RenderTitle from "./RenderTitle";
 
 export type Context = {
   text: string;
@@ -56,6 +59,7 @@ export default function SearchBar({
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value);
+    setShowingSearchResponse(event.target.value.endsWith("?"));
     return onSearch(event.target.value);
   };
 
@@ -97,7 +101,7 @@ export default function SearchBar({
 
       if (match) {
         result.push(
-          <Text as={"span"} fontWeight={"bold"}>
+          <Text as={"span"} fontWeight={600}>
             {text.slice(i, i + highlight.length)}
           </Text>
         );
@@ -123,6 +127,53 @@ export default function SearchBar({
   //   }
   //   return "test";
   // };
+
+  const formatTags = (msg: string): any[] => {
+    console.log("searchResults", searchResults, msg);
+    if (!msg) return [];
+    if (!searchResults) searchResults = questionResult?.content;
+    const acc = [];
+    console.log("msg", msg);
+    for (let i = 0; i < msg.length; i++) {
+      if (msg[i] === "[") {
+        const tag = msg.slice(i, msg.indexOf("]", i) + 1);
+        const tagNum = tag.slice(1, tag.length - 1);
+        console.log("stupid", videos, searchResults, tagNum);
+        const video = videos.find(
+          (v) => v.id === searchResults[+tagNum - 1].vid
+        );
+        // const time = video?.data().time;
+        const time = searchResults[+tagNum - 1].context.start;
+        const id = video?.id;
+        const link = `/v/${id}?t=${time}`;
+        const tagLink = (
+          <Tag
+            colorScheme={"blue"}
+            fontSize={"10px"}
+            size={"xs"}
+            p={1}
+            mb={-2}
+            display={"inline-block"}
+            _hover={{
+              cursor: "pointer",
+              bg: "blue.200",
+            }}
+            onClick={() => {
+              router.push(link);
+            }}
+          >
+            [{tagNum}]
+          </Tag>
+        );
+        acc.push(tagLink);
+        i = msg.indexOf("]", i);
+      } else {
+        console.log(msg[i]);
+        acc.push(<span>{msg[i]}</span>);
+      }
+    }
+    return acc;
+  };
 
   return (
     <>
@@ -180,8 +231,13 @@ export default function SearchBar({
 
           <Collapse in={showingSearchResponse} animateOpacity>
             <Divider my={4} />
-            <Text fontWeight={"medium"} fontSize={"xl"} mb={2}>
-              {/* {formatTags(questionResult?.answer?.message.content)} */}
+            {!questionResult?.answer?.message?.content && (
+              <Center>
+                <Spinner mt={2} />
+              </Center>
+            )}
+            <Text fontWeight={400} fontSize={"sm"} mb={2} px={2}>
+              {formatTags(questionResult?.answer?.message.content)}
             </Text>
           </Collapse>
           {((searchResults != null && searchResults.length > 0) ||
@@ -210,17 +266,15 @@ export default function SearchBar({
                   fill={"cover"}
                   w={"128px"}
                   h={"72px"}
-                  src={`https://backend.vibeo.video/video/${video.id}_0.png`}
+                  src={`https://backend.vibeo.video/video/${video?.id}_0.png`}
                   borderRadius={"md"}
                   objectFit={"cover"}
                 />
-                <Flex direction={"column"} ml={4}>
-                  <Text fontWeight={500} fontSize={"xl"}>
-                    {video.name}
-                  </Text>
-                  <Text fontWeight={300} fontSize={"sm"}>
+                <Flex direction={"column"} ml={2}>
+                  <RenderTitle title={video?.name} />
+                  <Text fontWeight={300} fontSize={"sm"} ml={2}>
                     <Badge mr={2}>
-                      {formatTime(result.context.start, video.id)}
+                      {formatTime(result.context.start, video?.id)}
                     </Badge>
                     {highlightText(result.context.text, result.highlight.text)}
                   </Text>
