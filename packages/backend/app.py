@@ -1,6 +1,10 @@
+import tempfile
 import threading
+import time
+from random import randint
 from typing import Union, List
 
+import ffmpeg
 from dotenv import load_dotenv
 from fastapi import FastAPI, Response
 from fastapi.logger import logger
@@ -21,6 +25,7 @@ from backend.models import (
     Highlight,
 )
 from backend.stream import *
+from backend.transcribe import tiny_transcribe, med_transcribe
 from backend.utils import (
     process_video,
     get_transcript,
@@ -73,7 +78,11 @@ def get_relevant_content(query: str, uid: str, vid: Union[str, None] = None):
         hightlight = Highlight(
             text=sentence.content, start=sentence.start, end=sentence.end
         )
-        context = Context(text=context, start=section.sentences[start_context_sentence_index].start, end=section.sentences[end_context_sentence_index - 1].end)  # type: ignore
+        context = Context(
+            text=context,
+            start=section.sentences[start_context_sentence_index].start,
+            end=section.sentences[end_context_sentence_index - 1].end,
+        )  # type: ignore
 
         relevant_content.append(
             Selection(highlight=hightlight, context=context, vid=vid)
@@ -193,3 +202,38 @@ async def stream_video(request: Request, filename: str):
         )
     except Exception as e:
         return {"error": str(e)}
+
+
+def getFilePath(id, partial):
+    return f"{FILE_DIR}/{id}-{partial}.webm"
+
+
+@app.get("/tiny")
+async def tiny(uid: str, partial: int):
+    # result = tiny.transcribe()
+    start_time = time.time()
+    path = getFilePath(uid, partial)
+    result = tiny_transcribe(path)
+
+    return {
+        "time": time.time() - start_time,
+        "path": getFilePath(uid, partial),
+        "result": result,
+    }
+
+
+@app.get("/revise")
+async def revise(uid: str, partial: int, num: int):
+    if partial < 4:
+        return {"result": "No revision needed"}
+    start_time = time.time()
+    # create a temp output file below using a python package
+    file = tempfile.mktemp(suffix=".webm")
+    # concatenate the last num partials using ffmpeg
+    files = [
+        ffmpeg.input(getFilePath(uid, i)) for i in range(partial - num + 1, partial + 1)
+    ]
+    ffmpeg.concat(*files, v=0, a=1).output(file).run()
+
+    result = med_transcribe(file)
+    return {"time": time.time() - start_time, "result": result, "file": file}

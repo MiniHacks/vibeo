@@ -10,3 +10,4 @@ chromadb
 openai[embeddings]
 sse-starlette
 asyncio
+ffmpeg==1.4
