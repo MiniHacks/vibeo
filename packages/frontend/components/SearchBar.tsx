@@ -67,7 +67,7 @@ export default function SearchBar({
     const reference = `./v/${id}`;
     // reference += `&t=${minutes}m${seconds}s` // TODO: implement
     return (
-      <a href={reference}>
+      <a href={`${reference}?t=${timeInSeconds | 0}`}>
         {minutes.toString()}:{seconds.toString().padStart(2, "0")}
       </a>
     );
