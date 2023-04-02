@@ -163,7 +163,7 @@ const Dashboard: NextPage = () => {
             }
           />
         </HStack>
-        <Wrap overflow={"unset"} spacing={6}>
+        <Wrap overflow={"unset"} spacing={6} justify={"center"}>
           {videos == null
             ? status
             : videos
