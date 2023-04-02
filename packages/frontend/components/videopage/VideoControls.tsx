@@ -1,7 +1,8 @@
 /* eslint-disable no-nested-ternary */ // 😡 ESlint was getting on my nerves with this one.
-import { Box, Text, Image } from "@chakra-ui/react";
+import { Box, Text, Image, Link } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { ExternalLinkIcon } from "@chakra-ui/icons";
 
 export type VideoControlsUser = {
   id: string;
@@ -15,6 +16,7 @@ export type VideoControlsProps = {
   videoTitle?: string;
   users?: VideoControlsUser[];
   endRecording?: () => void;
+  href?: string;
 };
 
 export const defaultUsers: VideoControlsUser[] = [
@@ -45,6 +47,7 @@ const VideoControls = ({
   videoRef,
   videoTitle,
   users = defaultUsers,
+  href,
   endRecording,
 }: VideoControlsProps): JSX.Element => {
   const [progress, setProgress] = useState(0);
@@ -161,7 +164,12 @@ const VideoControls = ({
     >
       <Box display={"flex"} justifyContent={"space-between"}>
         <Text fontSize={"xl"} fontWeight={"bold"}>
-          {videoTitle || "Video"}
+          {videoTitle || "Video"}{" "}
+          {href && (
+            <Link href={href} isExternal>
+              <ExternalLinkIcon mx={"2px"} mb={1} />
+            </Link>
+          )}
         </Text>
         <Box position={"relative"}>
           {users.map((user, index) => (

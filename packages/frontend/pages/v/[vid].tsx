@@ -91,6 +91,7 @@ const Vid: NextPage = () => {
           <Box flexGrow={1}>
             <VideoControls
               videoTitle={video.name}
+              href={video.youtube}
               videoRef={videoRef}
               endRecording={() =>
                 console.log("Yoo use this to stop the recording")
