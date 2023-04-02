@@ -21,7 +21,7 @@ import PageLayout from "../components/Layout/PageLayout";
 import useAuthUser from "../lib/hooks/useAuthUser";
 import Card from "../components/Card";
 import Button from "../components/Button";
-import SearchBar from "../components/SearchBar";
+import SearchBar, { SearchResponse } from "../components/SearchBar";
 import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 import AddVideoModal from "../components/AddVideoModal";
 import RenderTitle from "../components/RenderTitle";
@@ -49,7 +49,10 @@ const Dashboard: NextPage = () => {
     idField: "id", // this field will be added to the object created from each document
   });
 
-  const [searchResponse, setSearchResults] = useState(null);
+  const [searchResponse, setSearchResults] = useState<SearchResponse | null>(
+    null
+  );
+  const [videoFilter, setVideoFilter] = useState<string[] | null>(null);
 
   const filterSearch = (qry: string): void => {
     console.log("Searching for: ", qry);
@@ -62,9 +65,10 @@ const Dashboard: NextPage = () => {
       const url = `https://backend.vibeo.video/search?${params.toString()}`;
       fetch(url)
         .then((response) => response.json())
-        .then((result) => {
+        .then((result: SearchResponse) => {
           console.log("search");
           console.log(result);
+          setVideoFilter(result?.moments?.map((ele) => ele.vid) || null);
           setSearchResults(result);
         });
     } else {
@@ -77,9 +81,10 @@ const Dashboard: NextPage = () => {
         },
       })
         .then((response) => response.json())
-        .then((result) => {
+        .then((result: SearchResponse) => {
           console.log("question");
           console.log(result);
+          setVideoFilter(result?.moments?.map((ele) => ele.vid) || null);
           setSearchResults(result);
         });
     }
@@ -152,44 +157,49 @@ const Dashboard: NextPage = () => {
         <Wrap overflow={"unset"} spacing={6}>
           {videos == null
             ? status
-            : videos.map((video) => (
-                <WrapItem>
-                  <Button
-                    p={2}
-                    w={328}
-                    display={"block"}
-                    textAlign={"left"}
-                    bg={"white"}
-                    _hover={{ bg: "gray.100" }}
-                    _active={{ bg: "gray.200" }}
-                    onClick={() => {
-                      router.push(`/v/${video.id}`);
-                    }}
-                  >
-                    <Image
-                      src={"https://via.placeholder.com/640x360"}
-                      alt={"placeholder"}
-                      width={"100%"}
-                      borderRadius={"md"}
-                    />
-
-                    <Text
-                      fontSize={"xs"}
-                      fontWeight={300}
-                      mt={2}
-                      mb={1}
-                      mx={2}
-                      color={"gray.500"}
+            : videos
+                .filter(
+                  (ele) =>
+                    videoFilter == null || videoFilter.includes(ele.videoId)
+                )
+                .map((video) => (
+                  <WrapItem>
+                    <Button
+                      p={2}
+                      w={328}
+                      display={"block"}
+                      textAlign={"left"}
+                      bg={"white"}
+                      _hover={{ bg: "gray.100" }}
+                      _active={{ bg: "gray.200" }}
+                      onClick={() => {
+                        router.push(`/v/${video.id}`);
+                      }}
                     >
-                      {formatRelative(
-                        new Date(video.created.seconds * 1000),
-                        new Date()
-                      )}
-                    </Text>
-                    <RenderTitle title={video?.name ?? "Unnamed Video"} />
-                  </Button>
-                </WrapItem>
-              ))}
+                      <Image
+                        src={"https://via.placeholder.com/640x360"}
+                        alt={"placeholder"}
+                        width={"100%"}
+                        borderRadius={"md"}
+                      />
+
+                      <Text
+                        fontSize={"xs"}
+                        fontWeight={300}
+                        mt={2}
+                        mb={1}
+                        mx={2}
+                        color={"gray.500"}
+                      >
+                        {formatRelative(
+                          new Date(video.created.seconds * 1000),
+                          new Date()
+                        )}
+                      </Text>
+                      <RenderTitle title={video?.name ?? "Unnamed Video"} />
+                    </Button>
+                  </WrapItem>
+                ))}
         </Wrap>
       </Box>
       <AddVideoModal open={isOpen} onClose={onClose} uid={uid} />
