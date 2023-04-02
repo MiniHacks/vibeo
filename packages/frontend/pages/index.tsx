@@ -5,11 +5,9 @@ import PageLayout from "../components/Layout/PageLayout";
 import Footer from "../components/Layout/Footer";
 import Card from "../components/Card";
 import Button from "../components/Button";
-import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
+import Parallax from "../components/Parallax";
 
-// FIXME: turn the imgs into a background img in a box
-// so that the cards no longer have to be positioned absolute
-// and then parallax can be implemented
+import { useSignInWithProvider } from "../lib/hooks/useSignInWithProvider";
 
 const Home: NextPage = () => {
   const [signInWithProvider] = useSignInWithProvider();
@@ -23,6 +21,7 @@ const Home: NextPage = () => {
       <Image fit={"fill"} position={"absolute"} src={"bg.svg"} zIndex={"-2"} />
       <Box flexDirection={"column"} minH={"2150px"} display={"flex"}>
         <Box userSelect={"none"} flex={"1"}>
+          <Parallax offset={100}>
           <Card
             w={600}
             left={100}
@@ -40,8 +39,9 @@ const Home: NextPage = () => {
               Login
             </Button>
           </Card>
-
-          <Card left={200} top={1384} p={2} position={"absolute"}>
+        </Parallax>
+        <Parallax offset={1000}>
+          <Card left={200} top={1584} p={2} position={"absolute"}>
             <Image
               src={"https://via.placeholder.com/439x257"}
               alt={"placeholder"}
@@ -49,8 +49,7 @@ const Home: NextPage = () => {
               borderRadius={"md"}
             />
           </Card>
-
-          <Card left={824} top={1714} p={2} position={"absolute"}>
+          <Card left={824} top={2114} p={2} position={"absolute"}>
             <Image
               src={"https://via.placeholder.com/439x257"}
               alt={"placeholder"}
@@ -58,6 +57,7 @@ const Home: NextPage = () => {
               borderRadius={"md"}
             />
           </Card>
+          </Parallax>
         </Box>
       </Box>
       <Footer />
