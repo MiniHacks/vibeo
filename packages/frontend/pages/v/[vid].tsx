@@ -73,6 +73,25 @@ const Vid: NextPage = () => {
     setColor(c);
   };
 
+  const onSave = async () => {
+    if (typeof window === "undefined") return;
+    const canvas = window.document.querySelector("canvas");
+    if (!canvas) return;
+    await updateDoc(videoDocRef, {
+      notes: arrayUnion({
+        content: canvas.toDataURL(),
+        time: videoRef.current?.currentTime ?? 0,
+        timestamp: Date.now(),
+        isImage: true,
+        creator: {
+          uid: authUser?.uid,
+          name: authUser?.displayName,
+          avatar: authUser?.photoURL,
+        },
+      }),
+    });
+  };
+
   const onAddNote = (note: Partial<Note>) => {
     console.log(note);
     updateDoc(videoDocRef, {
@@ -123,7 +142,7 @@ const Vid: NextPage = () => {
       <Text fontSize={"xl"} fontWeight={"bold"}>
         Notes
       </Text>
-      <Notes videoRef={videoRef} notes={video.notes || []} />
+      <Notes vid={vid} videoRef={videoRef} notes={video.notes || []} />
     </>
   );
 
@@ -187,7 +206,7 @@ const Vid: NextPage = () => {
                 <Flex direction={"row"} justify={"space-between"} mt={4}>
                   <NewNote addNote={onAddNote} />
                   <Flex direction={"column"} justify={"center"} ml={5}>
-                    <CanvasToolbar onSetColor={onSetColor} />
+                    <CanvasToolbar onSetColor={onSetColor} onSave={onSave} />
                   </Flex>
                 </Flex>
               </>
