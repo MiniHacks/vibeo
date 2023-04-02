@@ -10,9 +10,8 @@ from fastapi import FastAPI, Response
 from fastapi.logger import logger
 from firebase_admin import firestore
 from pytube import YouTube
-from starlette.responses import FileResponse
-from random import randint
 from sse_starlette.sse import EventSourceResponse
+from starlette.responses import FileResponse
 
 from backend.connections import db
 from backend.constants import ENV_PATH, FILE_DIR
@@ -223,7 +222,6 @@ async def tiny(uid: str, partial: int):
     }
 
 
-
 @app.get("/revise")
 async def revise(uid: str, partial: int, num: int):
     if partial < 4:
@@ -232,10 +230,8 @@ async def revise(uid: str, partial: int, num: int):
     # create a temp output file below using a python package
     file = tempfile.mktemp(suffix=".webm")
     # concatenate the last num partials using ffmpeg
-    files = [
-        ffmpeg.input(getFilePath(uid, i)) for i in range(partial - num + 1, partial + 1)
-    ]
-
+    files = [ffmpeg.input(getFilePath(uid, i)) for i in range(partial - num + 1, partial + 1)]
+    ffmpeg.concat(*files, v=0, a=1).output(file).run()
 
     result = med_transcribe(file)
     return {"time": time.time() - start_time, "result": result, "file": file}
